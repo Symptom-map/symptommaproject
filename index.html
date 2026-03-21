@@ -154,12 +154,13 @@ body {
 .diag-item.active .diag-swatch { opacity: 1; }
 
 .diag-name {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.68rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
   color: var(--muted);
   transition: color 0.15s;
 }
-.diag-item.active .diag-name { color: var(--ink); }
+.diag-item.active .diag-name { color: var(--ink); font-weight: 500; }
 
 /* Generate button */
 .btn-generate {
@@ -276,12 +277,56 @@ textarea { resize: none; height: 70px; line-height: 1.5; }
 }
 .node-row:hover { background: var(--surface2); border-color: var(--border); }
 .node-row.selected { background: var(--bg); border-color: var(--ink); }
+.node-row.multi-selected { background: #eef4ff; border-color: #3d7ab8; }
 
 .node-row-bar { width: 3px; min-height: 18px; border-radius: 2px; flex-shrink: 0; align-self: stretch; }
-.node-row-name { font-size: 0.75rem; flex: 1; line-height: 1.3; }
+.node-row-name { font-size: 0.78rem; font-family: 'Poppins', sans-serif; font-weight: 400; flex: 1; line-height: 1.4; }
 .node-row-dots { display: flex; gap: 2px; flex-shrink: 0; }
 .dot-xs { width: 5px; height: 5px; border-radius: 50%; }
 .ai-dot { font-size: 0.55rem; color: var(--ai-glow); font-family: 'DM Mono', monospace; }
+
+/* Therapist notice */
+.therapist-notice {
+  margin: 8px 12px;
+  padding: 10px 12px;
+  background: #fef9ec;
+  border: 1px solid #e8c96a;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-family: 'Poppins', sans-serif;
+  color: #7a6020;
+  line-height: 1.5;
+}
+.therapist-notice strong { display: block; margin-bottom: 3px; font-weight: 600; }
+
+/* Multi-select panel */
+.multi-panel {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.multi-panel-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.multi-panel-names {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.5;
+  font-family: 'Poppins', sans-serif;
+}
+.multi-analysis {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink);
+  font-family: 'Poppins', sans-serif;
+  background: var(--surface2);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
 
 /* ─── CANVAS ──────────────────────────────────────────────── */
 #canvas-wrap {
@@ -983,26 +1028,48 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
   <div class="right-panel" id="right-panel">
     <div class="rp-inner" id="rp-inner" style="position:relative">
       <button class="rp-close" onclick="closeRightPanel()">×</button>
-      <div class="rp-title" id="rp-title">—</div>
-      <div class="rp-tags" id="rp-tags"></div>
-      <div id="rp-ai-note"></div>
-      <div>
-        <div class="rp-section-label">¿Cuándo / cómo aparece?</div>
-        <textarea class="rp-note-area" id="rp-context" placeholder="ej. cuando hay mucha gente, al despertar, con estrés..." style="height:64px;margin-bottom:8px"></textarea>
+
+      <!-- Single symptom view -->
+      <div id="rp-single">
+        <div class="rp-title" id="rp-title">—</div>
+        <div class="rp-tags" id="rp-tags"></div>
+        <div id="rp-ai-note"></div>
+        <div id="rp-therapist-notice" style="display:none" class="therapist-notice">
+          <strong>💬 Para explorar con tu terapeuta</strong>
+          No encontramos una conexión clara de este síntoma con tus diagnósticos. Puede ser algo importante para explorar con tu médico o terapeuta.
+        </div>
+        <div>
+          <div class="rp-section-label">¿Cuándo / cómo aparece?</div>
+          <textarea class="rp-note-area" id="rp-context" placeholder="ej. cuando hay mucha gente, al despertar, con estrés..." style="height:64px;margin-bottom:8px"></textarea>
+        </div>
+        <div>
+          <div class="rp-section-label">Notas / Diario</div>
+          <textarea class="rp-note-area" id="rp-notes" placeholder="¿Qué lo detona? ¿Cómo se siente en el cuerpo..."></textarea>
+        </div>
+        <div class="rp-actions">
+          <button class="btn-save" onclick="saveNote()">Guardar nota</button>
+          <button class="btn-del" onclick="deleteSelected()">Eliminar</button>
+        </div>
+        <div id="rp-promote" style="display:none;margin-top:6px">
+          <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()">
+            ↑ Mover al mapa principal
+          </button>
+        </div>
       </div>
-      <div>
-        <div class="rp-section-label">Notas / Diario</div>
-        <textarea class="rp-note-area" id="rp-notes" placeholder="¿Qué lo detona? ¿Cómo se siente en el cuerpo..."></textarea>
+
+      <!-- Multi-selection view -->
+      <div id="rp-multi" style="display:none">
+        <div class="multi-panel">
+          <div class="multi-panel-title" id="mp-title">Analizando intersección</div>
+          <div class="multi-panel-names" id="mp-names"></div>
+          <button class="btn-generate" id="mp-btn" onclick="analyzeMulti()" style="margin-top:4px">
+            <span class="ai-badge">IA</span>
+            <span id="mp-btn-label">¿Qué tienen en común?</span>
+          </button>
+          <div class="multi-analysis" id="mp-result" style="display:none"></div>
+        </div>
       </div>
-      <div class="rp-actions">
-        <button class="btn-save" onclick="saveNote()">Guardar nota</button>
-        <button class="btn-del" onclick="deleteSelected()">Eliminar</button>
-      </div>
-      <div id="rp-promote" style="display:none;margin-top:6px">
-        <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()">
-          ↑ Mover al mapa principal
-        </button>
-      </div>
+
     </div>
   </div>
 
@@ -1102,7 +1169,8 @@ let offX = 0, offY = 0, scale = 1;
 let W, H;
 let pendingSuggestions = [];
 let highlightedDiags = new Set();
-let legendHighlight = null; // 'hub'|'sym'|'multi'|'float'|'thin'|'thick'|'dash'|null
+let legendHighlight = null;
+let multiSelectedIds = new Set(); // Ctrl+click multi-selection
 
 // ═══════════════════════════════════════════════════════════
 // CANVAS SETUP
@@ -1340,11 +1408,18 @@ function draw() {
     }
 
     const isConseq = !n.hub && n.causeIds?.length > 0 && !n.inMainMap;
+    const isMultiSel = multiSelectedIds.has(n.id);
     ctx.globalAlpha = (diagDimmed || legDimmed) ? 0.1 : 1;
+    if (isMultiSel) {
+      // Glow ring for multi-selected
+      const p2 = w2s(n.x, n.y);
+      ctx.beginPath(); ctx.arc(p2.x, p2.y, (n.hub?HUB_R:SYM_R+4)*scale+6, 0, Math.PI*2);
+      ctx.strokeStyle = '#3d7ab855'; ctx.lineWidth = 2.5*scale; ctx.stroke();
+    }
     if (n.hub) drawHub(n, p, sel, hov);
     else if (isConseq) drawConsequence(n, p, sel, hov);
     else if (n.floating || n.conds.length === 0) drawFloating(n, p, sel, hov);
-    else drawSymptom(n, p, sel, hov);
+    else drawSymptom(n, p, sel||isMultiSel, hov);
     ctx.globalAlpha = 1;
   });
 }
@@ -1530,13 +1605,28 @@ let dragMoved = false; // track if mouse moved during drag
 
 canvas.addEventListener('mousedown', e => {
   const n = nodeAt(e.offsetX, e.offsetY);
-  if (n) {
+  if (n && !n.hub) {
+    if (e.ctrlKey || e.metaKey) {
+      // Ctrl+click: toggle multi-selection
+      if (multiSelectedIds.has(n.id)) multiSelectedIds.delete(n.id);
+      else multiSelectedIds.add(n.id);
+      selectedId = null;
+      dragNodeId = null;
+      if (multiSelectedIds.size >= 2) openMultiPanel();
+      else if (multiSelectedIds.size === 0) closeRightPanel();
+      renderNodeList(); draw();
+      dragging = false; dragMoved = false;
+      lastMx = e.offsetX; lastMy = e.offsetY;
+      return;
+    }
+    // Normal click: clear multi-selection
+    multiSelectedIds.clear();
     dragNodeId = n.id;
-    // Only highlight — don't open panel yet
     selectedId = n.id;
     renderNodeList();
     draw();
   } else {
+    multiSelectedIds.clear();
     dragNodeId = null;
     selectedId = null;
     closeRightPanel();
@@ -1624,6 +1714,9 @@ function selectNode(id, openPanel = true) {
   const n = state.nodes.find(nd=>nd.id===id);
   const rp = document.getElementById('right-panel');
   if (n && !n.hub && openPanel) {
+    document.getElementById('rp-single').style.display = 'block';
+    document.getElementById('rp-multi').style.display = 'none';
+    document.getElementById('rp-therapist-notice').style.display = 'none';
     document.getElementById('rp-title').textContent = n.name;
     document.getElementById('rp-tags').innerHTML = n.conds.map(c => {
       const d = DIAG_MAP[c]; if(!d) return '';
@@ -1659,9 +1752,68 @@ function selectNode(id, openPanel = true) {
 
 function closeRightPanel() {
   selectedId = null;
+  multiSelectedIds.clear();
   document.getElementById('right-panel').classList.remove('open');
   renderNodeList();
   draw();
+}
+
+function openMultiPanel() {
+  const rp = document.getElementById('right-panel');
+  rp.classList.add('open');
+  document.getElementById('rp-single').style.display = 'none';
+  document.getElementById('rp-multi').style.display = 'block';
+  const nodes = [...multiSelectedIds].map(id=>state.nodes.find(n=>n.id===id)).filter(Boolean);
+  const isEs = lang === 'es';
+  document.getElementById('mp-title').textContent = isEs
+    ? `${nodes.length} síntomas seleccionados`
+    : `${nodes.length} symptoms selected`;
+  document.getElementById('mp-names').textContent = nodes.map(n=>n.name).join(' · ');
+  document.getElementById('mp-btn-label').textContent = isEs ? '¿Qué tienen en común?' : 'What do they share?';
+  document.getElementById('mp-result').style.display = 'none';
+}
+
+async function analyzeMulti() {
+  const nodes = [...multiSelectedIds].map(id=>state.nodes.find(n=>n.id===id)).filter(Boolean);
+  if (nodes.length < 2) return;
+  const isEs = lang === 'es';
+  showLoading(isEs ? 'Analizando intersección...' : 'Analyzing intersection...');
+  const diagLabels = state.selectedDiags.map(d=>DIAG_MAP[d]?.label.replace('\n',' ')||d).join(', ');
+  const nodeDescriptions = nodes.map(n =>
+    `"${n.name}" (${n.conds.map(c=>DIAG_MAP[c]?.label.replace('\n',' ')||c).join(', ')||'unknown origin'})`
+  ).join(', ');
+
+  const prompt = `You are a psychoeducation assistant. The user has these diagnoses: ${diagLabels}.
+
+They selected these symptoms from their map to understand what they have in common: ${nodeDescriptions}.
+
+Explain in 3-4 sentences:
+1. What underlying mechanism or experience connects these symptoms
+2. Why they appear together in this specific diagnostic profile
+3. What this intersection reveals about their experience
+
+Respond in ${isEs ? 'Spanish' : 'English'}. Use warm, non-clinical language. Speak directly to the person (use "you"/"tú").`;
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(b=>b.text||'').join('').trim();
+    hideLoading();
+    const resultEl = document.getElementById('mp-result');
+    resultEl.textContent = text;
+    resultEl.style.display = 'block';
+  } catch(err) {
+    hideLoading();
+    showToast('Error: ' + err.message);
+  }
 }
 
 function saveNote() {
@@ -2081,6 +2233,10 @@ Responde SOLO con JSON válido, sin texto extra:
     hideLoading();
     saveState(); renderNodeList(); draw();
     selectNode(nodeId);
+    // Show therapist notice if no connection found
+    if (parsed.confidence === 'desconocido' || (!parsed.causeIds?.length && !parsed.diagConds?.length)) {
+      document.getElementById('rp-therapist-notice').style.display = 'block';
+    }
     const confLabel = { alta:'alta', media:'media', baja:'baja', desconocido:'incierto' }[parsed.confidence] || '';
     showToast(`Origen analizado — confianza ${confLabel}`);
   } catch(err) {
@@ -2099,7 +2255,7 @@ function renderNodeList() {
     return;
   }
   el.innerHTML = syms.map(n=>`
-    <div class="node-row ${n.id===selectedId?'selected':''}" onclick="selectNode('${n.id}')">
+    <div class="node-row ${n.id===selectedId?'selected':''} ${multiSelectedIds.has(n.id)?'multi-selected':''}" onclick="selectNode('${n.id}')">
       <div class="node-row-bar" style="background:${
         (n.floating||n.conds.length===0) ? '#88776666' :
         n.conds.length>1 ? `linear-gradient(180deg,${n.conds.map(c=>DIAG_MAP[c]?.color||'#888').join(',')})` :
