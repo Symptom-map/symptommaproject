@@ -653,6 +653,13 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
   font-family: 'Poppins', sans-serif;
 }
 .ob-lang-btn:hover { border-color: var(--ink); background: var(--bg); }
+.ob-lang-btn.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+.ob-lang-btn.selected .lang-name { color: var(--bg); }
+.ob-lang-btn.selected .lang-sub  { color: rgba(255,255,255,0.6); }
 .ob-lang-btn .lang-name { font-size: 1rem; font-weight: 600; display: block; margin-bottom: 3px; }
 .ob-lang-btn .lang-sub  { font-size: 0.68rem; color: var(--muted); font-family: 'DM Mono', monospace; }
 .ob-nav { display: flex; gap: 10px; align-items: center; }
@@ -786,7 +793,7 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
 <div id="onboarding">
   <div class="ob-box">
 
-    <!-- Step 1: Welcome + lang -->
+    <!-- Step 1: Language selection -->
     <div class="ob-step active" id="ob-step-1">
       <div>
         <div class="ob-logo">Symptom<span>Map</span></div>
@@ -794,11 +801,8 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
           A tool to map how your diagnoses connect through shared symptoms — not to diagnose, but to understand.
         </p>
       </div>
-      <div class="ob-disclaimer" id="ob-disclaimer">
-        This tool is designed for people who already have one or more mental health diagnoses confirmed by a professional. It is not a diagnostic tool.
-      </div>
       <div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--light);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Language / Idioma</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--light);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.1em">Language / Idioma</div>
         <div class="ob-lang">
           <button class="ob-lang-btn" id="lang-en" onclick="setLang('en')">
             <span class="lang-name">English</span>
@@ -809,16 +813,41 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
             <span class="lang-sub">Continuar en español</span>
           </button>
         </div>
+        <div id="lang-hint" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--light);margin-top:8px;text-align:center;opacity:0;transition:opacity 0.3s">
+          ✓ <span id="lang-hint-text">Language selected</span>
+        </div>
       </div>
       <div class="ob-nav">
-        <div class="ob-progress"><div class="ob-progress-fill" style="width:50%"></div></div>
-        <span class="ob-step-label" id="ob-step-label">1 / 2</span>
+        <div class="ob-progress"><div class="ob-progress-fill" style="width:33%"></div></div>
+        <span class="ob-step-label" id="ob-step-label">1 / 3</span>
         <button class="btn-primary" id="ob-next" onclick="obNext()" disabled style="width:auto;padding:8px 20px">→</button>
       </div>
     </div>
 
-    <!-- Step 2: How it works -->
+    <!-- Step 2: Name + disclaimer -->
     <div class="ob-step" id="ob-step-2">
+      <div>
+        <div class="ob-logo">Symptom<span>Map</span></div>
+        <p class="ob-tagline" id="ob-name-title">What should we call you?</p>
+      </div>
+      <div>
+        <input type="text" id="inp-username" placeholder="Your name or nickname"
+          style="font-size:1rem;padding:10px 14px;border-radius:6px"
+          oninput="updateNameBtn()">
+      </div>
+      <div class="ob-disclaimer" id="ob-disclaimer">
+        This tool is designed for people who already have one or more mental health diagnoses confirmed by a professional. If you already have a diagnosis, this helps you map and understand your symptoms — it is not a tool for self-diagnosis.
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()" style="padding:8px 16px" id="ob-back">←</button>
+        <div class="ob-progress"><div class="ob-progress-fill" style="width:66%"></div></div>
+        <span class="ob-step-label">2 / 3</span>
+        <button class="btn-primary" id="ob-next2" onclick="obNext2()" disabled style="width:auto;padding:8px 20px">→</button>
+      </div>
+    </div>
+
+    <!-- Step 3: How it works -->
+    <div class="ob-step" id="ob-step-3">
       <div>
         <div class="ob-logo">Symptom<span>Map</span></div>
         <p class="ob-tagline" id="ob-how-title">How it works</p>
@@ -847,9 +876,9 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
         </div>
       </div>
       <div class="ob-nav">
-        <button class="btn-secondary" onclick="obBack()" style="padding:8px 16px" id="ob-back">← Back</button>
+        <button class="btn-secondary" onclick="obBack2()" style="padding:8px 16px" id="ob-back2">←</button>
         <div class="ob-progress"><div class="ob-progress-fill" style="width:100%"></div></div>
-        <span class="ob-step-label">2 / 2</span>
+        <span class="ob-step-label">3 / 3</span>
         <button class="btn-primary" onclick="startApp()" style="width:auto;padding:8px 20px" id="ob-start">Start →</button>
       </div>
     </div>
@@ -874,7 +903,7 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="logo">Symptom<span class="logo-dot">Map</span></div>
-  <span class="topbar-hint" id="map-name">click · mover &nbsp;·&nbsp; doble click · abrir diario</span>
+  <span id="map-name" style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted)"></span>
   <div class="topbar-sep"></div>
   <button class="btn-icon" title="Exportar imagen" onclick="exportMap()">↗</button>
 </div>
@@ -2019,11 +2048,13 @@ Responde SOLO con JSON válido, sin texto extra:
 - Diagnósticos disponibles: ${state.selectedDiags.join(', ')}`;
 
   try {
-    const res = await fetch('/api/claude', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
@@ -2095,6 +2126,8 @@ function renderNodeList() {
 // AI GENERATION
 // ═══════════════════════════════════════════════════════════
 async function generateWithAI() {
+  const apiKey = localStorage.getItem('sm_apikey');
+  if (!apiKey) { openApiModal(); return; }
   if (state.selectedDiags.length === 0) { showToast('Selecciona al menos un diagnóstico'); return; }
 
   showLoading('Consultando IA...');
@@ -2148,11 +2181,13 @@ Usa lenguaje de primera persona, no patologizante.
 Enfócate en experiencias reales: emocionales, cognitivas, corporales, relacionales.`;
 
   try {
-    const res = await fetch('/api/claude', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
@@ -2423,27 +2458,61 @@ let obCurrentStep = 1;
 
 function setLang(l) {
   lang = l;
+  // Visual selected state
   document.getElementById('lang-en').classList.toggle('selected', l==='en');
   document.getElementById('lang-es').classList.toggle('selected', l==='es');
+  // Hint text
+  const hint = document.getElementById('lang-hint');
+  const hintText = document.getElementById('lang-hint-text');
+  hintText.textContent = l === 'es' ? 'Idioma seleccionado — puedes continuar' : 'Language selected — you can continue';
+  hint.style.opacity = '1';
   document.getElementById('ob-next').disabled = false;
   applyLang();
 }
 
+function updateNameBtn() {
+  const val = document.getElementById('inp-username').value.trim();
+  document.getElementById('ob-next2').disabled = val.length === 0;
+}
+
 function obNext() {
-  obCurrentStep = 2;
   document.getElementById('ob-step-1').classList.remove('active');
   document.getElementById('ob-step-2').classList.add('active');
+  // Update name placeholder based on lang
+  const inp = document.getElementById('inp-username');
+  inp.placeholder = lang === 'es' ? 'Tu nombre o apodo' : 'Your name or nickname';
+  document.getElementById('ob-name-title').textContent = lang === 'es' ? '¿Cómo te llamamos?' : 'What should we call you?';
+  document.getElementById('ob-disclaimer').textContent = lang === 'es'
+    ? 'Esta herramienta es para personas que ya tienen uno o más diagnósticos de salud mental confirmados por un profesional. Si ya tienes un diagnóstico, esto te ayuda a mapear y entender tus síntomas — no es una herramienta de autodiagnóstico.'
+    : 'This tool is for people who already have one or more mental health diagnoses confirmed by a professional. If you already have a diagnosis, this helps you map and understand your symptoms — it is not a tool for self-diagnosis.';
+  // Restore if name already entered
+  if (document.getElementById('inp-username').value.trim()) {
+    document.getElementById('ob-next2').disabled = false;
+  }
+}
+
+function obNext2() {
+  document.getElementById('ob-step-2').classList.remove('active');
+  document.getElementById('ob-step-3').classList.add('active');
 }
 
 function obBack() {
-  obCurrentStep = 1;
   document.getElementById('ob-step-2').classList.remove('active');
   document.getElementById('ob-step-1').classList.add('active');
 }
 
+function obBack2() {
+  document.getElementById('ob-step-3').classList.remove('active');
+  document.getElementById('ob-step-2').classList.add('active');
+}
+
 function startApp() {
+  const username = document.getElementById('inp-username').value.trim();
   state.lang = lang;
+  state.username = username;
   saveState();
+  // Show name in topbar
+  if (username) document.getElementById('map-name').textContent = username + "'s map";
   const ob = document.getElementById('onboarding');
   ob.classList.add('hide');
   setTimeout(() => ob.style.display='none', 400);
@@ -2486,6 +2555,9 @@ if (state.nodes.length > 0 || state.selectedDiags.length > 0) {
   const ob = document.getElementById('onboarding');
   ob.style.display = 'none';
   document.getElementById('legend').classList.remove('hidden');
+  if (state.username) {
+    document.getElementById('map-name').textContent = state.username + (lang==='es' ? "'s map" : "'s map");
+  }
 } else {
   // First time — hide legend until app starts
   document.getElementById('legend').classList.add('hidden');
