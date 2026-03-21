@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymptomMap</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:       #f7f4ef;
+  --surface:  #eeeae2;
+  --surface2: #e5e0d5;
+  --border:   #ccc8be;
+  --ink:      #1c1a16;
+  --muted:    #7a7060;
+  --light:    #aaa090;
+  --tda:   #c0622a;
+  --tlp:   #3d7ab8;
+  --an:    #e05c3a;
+  --aut:   #1aabb0;
+  --cptsd: #7c6ab0;
+  --bi:    #d4953a;
+  --anx:   #6aaa4a;
+  --ai-glow: #1aabb0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar {
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.logo-dot { color: var(--ai-glow); }
+
+.topbar-sep { flex: 1; }
+
+.topbar-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--light);
+  letter-spacing: 0.05em;
+}
+
+.btn-icon {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.btn-icon:hover { background: var(--surface); border-color: var(--ink); color: var(--ink); }
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── LEFT PANEL ─────────────────────────────────────────── */
+.left-panel {
+  width: 280px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--surface);
+  transition: width 0.25s ease;
+}
+
+.left-panel.collapsed { width: 0; border: none; }
+
+.panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 280px;
+}
+
+.panel-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--light);
+  margin-bottom: 10px;
+}
+
+/* Diagnosis checkboxes */
+.diag-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+
+.diag-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: all 0.12s;
+}
+.diag-item:hover { background: var(--surface2); }
+.diag-item.active { border-color: var(--border); background: var(--bg); }
+.diag-item input { display: none; }
+
+.diag-swatch {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.diag-item.active .diag-swatch { opacity: 1; }
+
+.diag-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+.diag-item.active .diag-name { color: var(--ink); }
+
+/* Generate button */
+.btn-generate {
+  width: 100%;
+  padding: 9px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-generate:hover { opacity: 0.8; }
+.btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ai-badge {
+  background: var(--ai-glow);
+  color: white;
+  font-size: 0.52rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+}
+
+/* Add symptom form */
+.form-row { margin-bottom: 8px; }
+.form-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 3px;
+  display: block;
+}
+
+input[type="text"], textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 6px 9px;
+  font-family: 'Lora', serif;
+  font-size: 0.8rem;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input[type="text"]:focus, textarea:focus { border-color: var(--ink); }
+textarea { resize: none; height: 70px; line-height: 1.5; }
+
+.cond-checks { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.cond-check { display: flex; align-items: center; cursor: pointer; }
+.cond-check input { display: none; }
+.cond-pill {
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.12s;
+  user-select: none;
+}
+.cond-check input:checked + .cond-pill { color: white; }
+.cond-check input:checked + .p-tda   { background: var(--tda);   border-color: var(--tda); }
+.cond-check input:checked + .p-tlp   { background: var(--tlp);   border-color: var(--tlp); }
+.cond-check input:checked + .p-an    { background: var(--an);    border-color: var(--an); }
+.cond-check input:checked + .p-aut   { background: var(--aut);   border-color: var(--aut); }
+.cond-check input:checked + .p-cptsd { background: var(--cptsd); border-color: var(--cptsd); }
+.cond-check input:checked + .p-bi    { background: var(--bi);    border-color: var(--bi); }
+.cond-check input:checked + .p-anx   { background: var(--anx);   border-color: var(--anx); }
+
+.btn-add {
+  width: 100%;
+  padding: 7px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-add:hover { border-color: var(--ink); color: var(--ink); }
+
+/* Node list */
+.node-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+.node-scroll::-webkit-scrollbar { width: 3px; }
+.node-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.1s;
+  margin-bottom: 3px;
+}
+.node-row:hover { background: var(--surface2); border-color: var(--border); }
+.node-row.selected { background: var(--bg); border-color: var(--ink); }
+
+.node-row-bar { width: 3px; min-height: 18px; border-radius: 2px; flex-shrink: 0; align-self: stretch; }
+.node-row-name { font-size: 0.75rem; flex: 1; line-height: 1.3; }
+.node-row-dots { display: flex; gap: 2px; flex-shrink: 0; }
+.dot-xs { width: 5px; height: 5px; border-radius: 50%; }
+.ai-dot { font-size: 0.55rem; color: var(--ai-glow); font-family: 'DM Mono', monospace; }
+
+/* ─── CANVAS ──────────────────────────────────────────────── */
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+canvas { position: absolute; top: 0; left: 0; cursor: default; }
+
+/* ─── RIGHT PANEL (symptom detail) ───────────────────────── */
+.right-panel {
+  width: 0;
+  border-left: 1px solid transparent;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.22s ease;
+  background: var(--surface);
+}
+.right-panel.open {
+  width: 280px;
+  border-left-color: var(--border);
+}
+
+.rp-inner {
+  width: 280px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.rp-inner::-webkit-scrollbar { width: 3px; }
+.rp-inner::-webkit-scrollbar-thumb { background: var(--border); }
+
+.rp-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.rp-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+  padding-right: 24px;
+}
+
+.rp-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.rp-tag {
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  border: 1px solid;
+}
+
+.rp-ai-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(74,128,96,0.07);
+  border: 1px solid rgba(74,128,96,0.2);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.rp-section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--light);
+  margin-bottom: 4px;
+}
+
+.rp-note-area {
+  width: 100%;
+  height: 120px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-family: 'Lora', serif;
+  font-size: 0.8rem;
+  color: var(--ink);
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.15s;
+}
+.rp-note-area:focus { border-color: var(--ink); }
+.rp-note-area::placeholder { color: var(--light); font-style: italic; }
+
+.rp-actions { display: flex; gap: 6px; }
+.btn-save {
+  flex: 1;
+  padding: 7px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-save:hover { opacity: 0.8; }
+
+.btn-del {
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-del:hover { border-color: #cc4444; color: #cc4444; }
+
+/* ─── TOOLTIP ─────────────────────────────────────────────── */
+#tooltip {
+  position: fixed;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 100;
+  white-space: nowrap;
+  max-width: 220px;
+  white-space: normal;
+}
+#tooltip.show { opacity: 1; }
+
+/* ─── LOADING OVERLAY ────────────────────────────────────── */
+#loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(247,244,239,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+#loading.show { opacity: 1; pointer-events: all; }
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--ai-glow);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading p {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ─── API KEY MODAL ───────────────────────────────────────── */
+#apimodal {
+  position: fixed;
+  inset: 0;
+  background: rgba(28,26,22,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+#apimodal.show { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.modal-box h2 { font-size: 1.05rem; }
+.modal-box p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.modal-box input {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+.modal-actions { display: flex; gap: 8px; }
+.btn-primary {
+  flex: 1; padding: 8px;
+  background: var(--ink); color: var(--bg);
+  border: none; border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.8; }
+.btn-secondary {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ─── DIAG PROFILE MODAL ─────────────────────────────────── */
+#diagmodal {
+  position: fixed;
+  inset: 0;
+  background: rgba(28,26,22,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+#diagmodal.show { opacity: 1; pointer-events: all; }
+
+.diagmodal-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  width: 420px;
+  max-height: 88vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.diagmodal-box::-webkit-scrollbar { width: 3px; }
+.diagmodal-box::-webkit-scrollbar-thumb { background: var(--border); }
+
+.diagmodal-header {
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+.diagmodal-header h2 { font-size: 1rem; font-weight: 600; }
+.diagmodal-header p  { font-size: 0.78rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+.diagmodal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+.profile-field { display: flex; flex-direction: column; gap: 5px; }
+.profile-field label { font-family: 'DM Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.profile-field input[type="text"],
+.profile-field input[type="number"],
+.profile-field textarea { font-size: 0.8rem; }
+.profile-field textarea { height: 64px; resize: none; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.12s;
+  user-select: none;
+}
+.chip.on { color: white; border-color: transparent; }
+
+.diagmodal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+}
+
+/* context field in add-symptom form */
+.context-field {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease;
+}
+.context-field.open { max-height: 120px; }
+.context-field textarea { height: 56px; font-size: 0.78rem; resize: none; margin-top: 4px; }
+
+/* ─── ACCORDION ──────────────────────────────────────────── */
+.accordion-section { border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.accordion-section:last-child { border-bottom: none; }
+.accordion-header {
+  width: 100%; padding: 11px 16px;
+  background: none; border: none;
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); text-align: left; transition: color 0.12s;
+}
+.accordion-header:hover { color: var(--ink); }
+.accordion-header.open  { color: var(--ink); }
+.acc-count { font-size: 0.58rem; background: var(--surface2); border-radius: 10px; padding: 1px 6px; color: var(--muted); }
+.acc-arrow { margin-left: auto; font-size: 0.7rem; transition: transform 0.2s; color: var(--light); }
+.accordion-header:not(.open) .acc-arrow { transform: rotate(-90deg); }
+.accordion-body { padding: 0 16px 14px; }
+
+/* ─── ONBOARDING ─────────────────────────────────────────── */
+#onboarding {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.35s ease;
+}
+#onboarding.hide { opacity: 0; pointer-events: none; }
+.ob-box { width: 460px; max-width: 94vw; display: flex; flex-direction: column; gap: 0; }
+.ob-step { display: none; flex-direction: column; gap: 22px; }
+.ob-step.active { display: flex; }
+.ob-logo { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; font-family: 'Poppins', sans-serif; }
+.ob-logo span { color: var(--ai-glow); }
+.ob-tagline { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+.ob-disclaimer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ai-glow);
+  border-radius: 0 6px 6px 0;
+  padding: 14px 16px;
+  font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+}
+.ob-lang { display: flex; gap: 10px; }
+.ob-lang-btn {
+  flex: 1; padding: 16px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); cursor: pointer;
+  text-align: center; transition: all 0.15s;
+  font-family: 'Poppins', sans-serif;
+}
+.ob-lang-btn:hover { border-color: var(--ink); background: var(--bg); }
+.ob-lang-btn .lang-name { font-size: 1rem; font-weight: 600; display: block; margin-bottom: 3px; }
+.ob-lang-btn .lang-sub  { font-size: 0.68rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+.ob-nav { display: flex; gap: 10px; align-items: center; }
+.ob-progress { flex: 1; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.ob-progress-fill { height: 100%; background: var(--ink); border-radius: 1px; transition: width 0.3s ease; }
+.ob-step-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: var(--light); }
+
+/* ─── LEGEND ─────────────────────────────────────────────── */
+#legend {
+  position: absolute; bottom: 20px; left: 20px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 28px 12px 14px;
+  font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  color: var(--muted); z-index: 10;
+  display: flex; flex-direction: column; gap: 7px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: opacity 0.2s;
+}
+#legend.hidden { opacity: 0; pointer-events: none; }
+.legend-title { font-size: 0.57rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--light); margin-bottom: 1px; }
+.legend-row { display: flex; align-items: center; gap: 9px; }
+.legend-hub { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; }
+.legend-sym { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.legend-sym.multi { background: transparent; border: 2px solid var(--muted); width: 10px; height: 10px; }
+.legend-sym.float { background: transparent; border: 2px dashed var(--muted); width: 10px; height: 10px; }
+.legend-line { width: 22px; height: 1px; background: var(--muted); border-radius: 1px; flex-shrink: 0; opacity: 0.4; }
+.legend-line.thick { height: 3px; opacity: 0.9; }
+.legend-line.dashed { background: repeating-linear-gradient(90deg,#1c1a1688 0,#1c1a1688 3px,transparent 3px,transparent 6px); }
+.legend-close { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer; color: var(--light); font-size: 0.8rem; }
+.legend-row { cursor: default; border-radius: 4px; padding: 2px 4px; margin: 0 -4px; transition: background 0.12s; }
+.legend-row:hover { background: var(--surface2); }
+.legend-row:hover span { color: var(--ink); }
+#legend-toggle {
+  position: absolute; bottom: 20px; left: 20px; z-index: 10;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 5px 10px;
+  font-family: 'DM Mono', monospace; font-size: 0.6rem;
+  color: var(--muted); cursor: pointer; display: none;
+}
+#legend-toggle:hover { color: var(--ink); border-color: var(--ink); }
+
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  opacity: 0;
+  transition: all 0.2s;
+  pointer-events: none;
+  z-index: 400;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── SUGGESTED REVIEW ────────────────────────────────────── */
+#review-panel {
+  position: fixed;
+  top: 52px; right: 0; bottom: 0;
+  width: 340px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  overflow: hidden;
+}
+#review-panel.show { transform: translateX(0); }
+.review-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.review-header h3 { font-size: 0.88rem; flex: 1; }
+.review-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+.review-scroll::-webkit-scrollbar { width: 3px; }
+.review-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+
+.suggest-item {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  transition: all 0.12s;
+}
+.suggest-item:hover { border-color: var(--ink); }
+
+.suggest-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+.suggest-reason { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-bottom: 8px; line-height: 1.4; }
+.suggest-conds { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px; }
+.suggest-actions { display: flex; gap: 5px; }
+.btn-accept {
+  flex: 1; padding: 5px;
+  background: var(--ai-glow); color: white;
+  border: none; border-radius: 3px;
+  font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  cursor: pointer; transition: opacity 0.12s;
+}
+.btn-accept:hover { opacity: 0.85; }
+.btn-reject {
+  padding: 5px 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-reject:hover { border-color: #cc4444; color: #cc4444; }
+
+.review-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-box">
+
+    <!-- Step 1: Welcome + lang -->
+    <div class="ob-step active" id="ob-step-1">
+      <div>
+        <div class="ob-logo">Symptom<span>Map</span></div>
+        <p class="ob-tagline" id="ob-tagline">
+          A tool to map how your diagnoses connect through shared symptoms — not to diagnose, but to understand.
+        </p>
+      </div>
+      <div class="ob-disclaimer" id="ob-disclaimer">
+        This tool is designed for people who already have one or more mental health diagnoses confirmed by a professional. It is not a diagnostic tool.
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--light);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Language / Idioma</div>
+        <div class="ob-lang">
+          <button class="ob-lang-btn" id="lang-en" onclick="setLang('en')">
+            <span class="lang-name">English</span>
+            <span class="lang-sub">Continue in English</span>
+          </button>
+          <button class="ob-lang-btn" id="lang-es" onclick="setLang('es')">
+            <span class="lang-name">Español</span>
+            <span class="lang-sub">Continuar en español</span>
+          </button>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <div class="ob-progress"><div class="ob-progress-fill" style="width:50%"></div></div>
+        <span class="ob-step-label" id="ob-step-label">1 / 2</span>
+        <button class="btn-primary" id="ob-next" onclick="obNext()" disabled style="width:auto;padding:8px 20px">→</button>
+      </div>
+    </div>
+
+    <!-- Step 2: How it works -->
+    <div class="ob-step" id="ob-step-2">
+      <div>
+        <div class="ob-logo">Symptom<span>Map</span></div>
+        <p class="ob-tagline" id="ob-how-title">How it works</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.7rem;flex-shrink:0">1</div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px" id="ob-h1">Select your diagnoses</div>
+            <div style="font-size:0.78rem;color:var(--muted);line-height:1.5" id="ob-b1">From the left panel. Each one you add will ask a few questions to personalize your map.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.7rem;flex-shrink:0">2</div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px" id="ob-h2">Generate suggestions</div>
+            <div style="font-size:0.78rem;color:var(--muted);line-height:1.5" id="ob-b2">The AI will suggest symptoms based on your specific profile. Accept, reject, or edit each one.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:0.7rem;flex-shrink:0">3</div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px" id="ob-h3">Make it yours</div>
+            <div style="font-size:0.78rem;color:var(--muted);line-height:1.5" id="ob-b3">Add your own symptoms, move nodes freely, and double-click any node to open its notes.</div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()" style="padding:8px 16px" id="ob-back">← Back</button>
+        <div class="ob-progress"><div class="ob-progress-fill" style="width:100%"></div></div>
+        <span class="ob-step-label">2 / 2</span>
+        <button class="btn-primary" onclick="startApp()" style="width:auto;padding:8px 20px" id="ob-start">Start →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <button class="legend-close" onclick="toggleLegend()">×</button>
+  <div class="legend-title" id="leg-title">Legend</div>
+  <div class="legend-row" data-highlight="hub"   onmouseenter="legendHover('hub')"   onmouseleave="legendHoverEnd()"><div class="legend-hub"></div><span id="leg-hub">Diagnosis</span></div>
+  <div class="legend-row" data-highlight="sym"   onmouseenter="legendHover('sym')"   onmouseleave="legendHoverEnd()"><div class="legend-sym"></div><span id="leg-sym">Symptom (1 diagnosis)</span></div>
+  <div class="legend-row" data-highlight="multi" onmouseenter="legendHover('multi')" onmouseleave="legendHoverEnd()"><div class="legend-sym multi"></div><span id="leg-multi">Symptom (shared)</span></div>
+  <div class="legend-row" data-highlight="float" onmouseenter="legendHover('float')" onmouseleave="legendHoverEnd()"><div class="legend-sym float"></div><span id="leg-float">Unknown origin</span></div>
+  <div class="legend-row" data-highlight="thin"  onmouseenter="legendHover('thin')"  onmouseleave="legendHoverEnd()"><div class="legend-line"></div><span id="leg-thin">Individual connection</span></div>
+  <div class="legend-row" data-highlight="thick" onmouseenter="legendHover('thick')" onmouseleave="legendHoverEnd()"><div class="legend-line thick"></div><span id="leg-thick">Shared connection</span></div>
+  <div class="legend-row" data-highlight="dash"  onmouseenter="legendHover('dash')"  onmouseleave="legendHoverEnd()"><div class="legend-line dashed"></div><span id="leg-dash">Consequence →</span></div>
+</div>
+<button id="legend-toggle" onclick="toggleLegend()" id="leg-btn">? legend</button>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">Symptom<span class="logo-dot">Map</span></div>
+  <span class="topbar-hint" id="map-name">click · mover &nbsp;·&nbsp; doble click · abrir diario</span>
+  <div class="topbar-sep"></div>
+  <button class="btn-icon" title="Configurar API key" onclick="openApiModal()">🔑</button>
+  <button class="btn-icon" title="Exportar imagen" onclick="exportMap()">↗</button>
+</div>
+
+<div class="app">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel" id="left-panel">
+    <div class="panel-inner">
+
+      <!-- Section: Diagnósticos -->
+      <div class="accordion-section" id="acc-diags">
+        <button class="accordion-header open" onclick="toggleAccordion('acc-diags')">
+          <span id="acc-diags-label">Mis diagnósticos</span>
+          <span class="acc-count" id="acc-diags-count"></span>
+          <span class="acc-arrow">▾</span>
+        </button>
+        <div class="accordion-body">
+          <div class="diag-list" id="diag-list"></div>
+          <button class="btn-generate" id="btn-gen" onclick="generateWithAI()" disabled>
+            <span class="ai-badge">IA</span>
+            <span id="btn-gen-label">Sugerir síntomas</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section: Agregar síntoma -->
+      <div class="accordion-section" id="acc-add">
+        <button class="accordion-header" onclick="toggleAccordion('acc-add')">
+          <span id="acc-add-label">Agregar síntoma</span>
+          <span class="acc-arrow">▾</span>
+        </button>
+        <div class="accordion-body" style="display:none">
+          <div class="form-row">
+            <input type="text" id="inp-name" placeholder="ej. náuseas, insomnio..."
+              oninput="toggleContextHint(this.value)">
+          </div>
+          <div class="context-field" id="context-field">
+            <span class="form-label">¿Cuándo / cómo aparece? (opcional)</span>
+            <textarea id="inp-context" placeholder="ej. cuando hay mucha gente, después de comer, al despertar..."></textarea>
+          </div>
+          <div class="form-row">
+            <span class="form-label">Condición(es) — opcional</span>
+            <div class="cond-checks" id="add-checks"></div>
+          </div>
+          <div class="form-row" style="display:flex;gap:6px">
+            <button class="btn-add" style="flex:1" onclick="addNodeManual()">+ Agregar</button>
+            <button class="btn-add" style="flex:1;border-color:var(--ai-glow);color:var(--ai-glow)" onclick="addWithAIAnalysis()">✦ Analizar origen</button>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--light);margin-top:4px;line-height:1.5" id="add-hint">
+            Sin condición → nodo flotante. "Analizar origen" → la IA busca qué síntomas lo generan.
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Síntomas -->
+      <div class="accordion-section" id="acc-list" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+        <button class="accordion-header open" onclick="toggleAccordion('acc-list')">
+          <span id="acc-list-label">Síntomas</span>
+          <span class="acc-count" id="acc-list-count"></span>
+          <span class="acc-arrow">▾</span>
+        </button>
+        <div class="accordion-body" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+          <div class="node-scroll" id="node-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-wrap">
+    <canvas id="graph"></canvas>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel" id="right-panel">
+    <div class="rp-inner" id="rp-inner" style="position:relative">
+      <button class="rp-close" onclick="closeRightPanel()">×</button>
+      <div class="rp-title" id="rp-title">—</div>
+      <div class="rp-tags" id="rp-tags"></div>
+      <div id="rp-ai-note"></div>
+      <div>
+        <div class="rp-section-label">¿Cuándo / cómo aparece?</div>
+        <textarea class="rp-note-area" id="rp-context" placeholder="ej. cuando hay mucha gente, al despertar, con estrés..." style="height:64px;margin-bottom:8px"></textarea>
+      </div>
+      <div>
+        <div class="rp-section-label">Notas / Diario</div>
+        <textarea class="rp-note-area" id="rp-notes" placeholder="¿Qué lo detona? ¿Cómo se siente en el cuerpo..."></textarea>
+      </div>
+      <div class="rp-actions">
+        <button class="btn-save" onclick="saveNote()">Guardar nota</button>
+        <button class="btn-del" onclick="deleteSelected()">Eliminar</button>
+      </div>
+      <div id="rp-promote" style="display:none;margin-top:6px">
+        <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()">
+          ↑ Mover al mapa principal
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUGGESTED REVIEW PANEL -->
+<div id="review-panel">
+  <div class="review-header">
+    <div class="ai-badge" style="font-size:0.6rem;padding:2px 6px">IA</div>
+    <h3>Síntomas sugeridos</h3>
+    <button class="btn-icon" onclick="closeReview()">×</button>
+  </div>
+  <div class="review-scroll" id="review-list"></div>
+  <div class="review-footer">
+    <button class="btn-primary" onclick="acceptAll()">Aceptar todos</button>
+    <button class="btn-secondary" onclick="closeReview()">Cerrar</button>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"></div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Generando síntomas...</p>
+</div>
+
+<!-- API MODAL -->
+<div id="apimodal">
+  <div class="modal-box">
+    <h2>API Key de Anthropic</h2>
+    <p>Tu key se guarda solo en este navegador. Nunca se envía a ningún servidor — solo va directo a Anthropic al generar síntomas.</p>
+    <div>
+      <span class="form-label">API Key</span>
+      <input type="password" id="api-input" placeholder="sk-ant-...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveApiKey()">Guardar</button>
+      <button class="btn-secondary" onclick="closeApiModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIAG PROFILE MODAL -->
+<div id="diagmodal">
+  <div class="diagmodal-box">
+    <div class="diagmodal-header">
+      <h2 id="diagmodal-title">Cuéntame sobre tu diagnóstico</h2>
+      <p id="diagmodal-desc">Esta información ayuda a la IA a sugerir síntomas más precisos para tu experiencia específica.</p>
+    </div>
+    <div class="diagmodal-body" id="diagmodal-body"></div>
+    <div class="diagmodal-footer">
+      <button class="btn-primary" onclick="saveDiagProfile()">Guardar perfil</button>
+      <button class="btn-secondary" onclick="closeDiagModal()">Omitir</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const DIAGNOSES = [
+  { id:'tda',   label:'TDA\nTDAH',             color:'#c0622a' },
+  { id:'tlp',   label:'TLP\nBorderline',        color:'#3d7ab8' },
+  { id:'an',    label:'Anorexia\nNerviosa',     color:'#e05c3a' },
+  { id:'aut',   label:'Rasgos\nAutistas',       color:'#1aabb0' },
+  { id:'cptsd', label:'C-PTSD',                 color:'#7c6ab0' },
+  { id:'bi',    label:'Trastorno\nBipolar',     color:'#d4953a' },
+  { id:'anx',   label:'Ansiedad\nGeneralizada', color:'#6aaa4a' },
+];
+
+const DIAG_MAP = Object.fromEntries(DIAGNOSES.map(d => [d.id, d]));
+const HUB_R  = 46;
+const SYM_R  = 6;
+const AI_COLOR = '#1aabb0';
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let state = loadState() || {
+  selectedDiags: [],
+  nodes: [],
+  idCounter: 1,
+};
+
+let selectedId  = null;
+let hoveredId   = null;
+let dragging    = false;
+let dragNodeId  = null;
+let lastMx = 0, lastMy = 0;
+let offX = 0, offY = 0, scale = 1;
+let W, H;
+let pendingSuggestions = [];
+let highlightedDiags = new Set();
+let legendHighlight = null; // 'hub'|'sym'|'multi'|'float'|'thin'|'thick'|'dash'|null
+
+// ═══════════════════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════════════════
+const wrap   = document.getElementById('canvas-wrap');
+const canvas = document.getElementById('graph');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+  W = canvas.width  = wrap.clientWidth;
+  H = canvas.height = wrap.clientHeight;
+  if (state.nodes.length === 0) initLayout();
+  draw();
+}
+
+function initLayout() {
+  const hubs = state.nodes.filter(n => n.hub);
+  if (hubs.length === 0) return;
+  const spacing = Math.min(W * 0.2, 180);
+  const totalW  = spacing * (hubs.length - 1);
+  let startX = offX - totalW / 2;
+  const y = offY - H * 0.08;
+  hubs.forEach((h, i) => {
+    if (!h._placed) {
+      h.x = startX + i * spacing;
+      h.y = y;
+      h._placed = true;
+    }
+  });
+  const syms = state.nodes.filter(n => !n.hub && !n._placed);
+  syms.forEach((n, i) => {
+    const hub = state.nodes.find(h => h.hub && h.conds[0] === n.conds[0]);
+    const ang = (i / Math.max(syms.length, 1)) * Math.PI * 2;
+    n.x = (hub ? hub.x : offX) + Math.cos(ang) * 100;
+    n.y = (hub ? hub.y : offY) + 90 + Math.abs(Math.sin(ang)) * 80;
+    n._placed = true;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════
+function edgePt(cx, cy, r, tx, ty) {
+  const dx = tx-cx, dy = ty-cy, d = Math.sqrt(dx*dx+dy*dy)||1;
+  return { x: cx+dx/d*r, y: cy+dy/d*r };
+}
+
+function w2s(wx, wy) {
+  return { x: (wx-offX)*scale + W/2, y: (wy-offY)*scale + H/2 };
+}
+function s2w(sx, sy) {
+  return { x: (sx-W/2)/scale + offX, y: (sy-H/2)/scale + offY };
+}
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+
+  // paper lines
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,0,0,0.025)';
+  ctx.lineWidth = 1;
+  for (let y = 0; y < H; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  ctx.restore();
+
+  if (state.nodes.length === 0) {
+    ctx.fillStyle = '#aaa090';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '14px Poppins, sans-serif';
+    ctx.fillText('Selecciona tus diagnósticos y genera síntomas →', W/2, H/2);
+    return;
+  }
+
+  const hubs = state.nodes.filter(n => n.hub);
+
+  // hub-to-hub lines
+  for (let i = 0; i < hubs.length-1; i++) {
+    const pa = w2s(hubs[i].x, hubs[i].y);
+    const pb = w2s(hubs[i+1].x, hubs[i+1].y);
+    const from = edgePt(pa.x, pa.y, HUB_R*scale, pb.x, pb.y);
+    const to   = edgePt(pb.x, pb.y, HUB_R*scale, pa.x, pa.y);
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.strokeStyle = '#1c1a1633';
+    ctx.lineWidth = 1.5 * scale;
+    ctx.stroke();
+  }
+
+  // ── symptom edges — hierarchy by shared connections ──────
+  // Shared (≥2 diagnoses): thick + visible = the interesting connections
+  // Individual (1 diagnosis): thin + faint = context without noise
+  // Hover/select: full brightness regardless
+  const syms = state.nodes.filter(n => !n.hub);
+
+  // Draw individual edges first (below), shared on top
+  [false, true].forEach(drawShared => {
+    syms.forEach(sym => {
+      const isShared = sym.conds.length > 1;
+      if (isShared !== drawShared) return;
+
+      const active = sym.id === selectedId || sym.id === hoveredId;
+      // diagFilter dimming
+      const inFilter = highlightedDiags.size === 0 ||
+        sym.conds.some(c => highlightedDiags.has(c));
+      const dimmed = !inFilter && highlightedDiags.size > 0;
+
+      // legendHighlight dimming for edges
+      let legEdgeDim = false;
+      if (legendHighlight) {
+        if (legendHighlight === 'thin'  &&  isShared) legEdgeDim = true;
+        if (legendHighlight === 'thick' && !isShared) legEdgeDim = true;
+        if (legendHighlight === 'hub' || legendHighlight === 'sym' ||
+            legendHighlight === 'multi' || legendHighlight === 'float' ||
+            legendHighlight === 'dash') legEdgeDim = true;
+      }
+
+      const opacity   = (dimmed || legEdgeDim) ? 0.04 : active ? 0.9  : isShared ? 0.55 : 0.18;
+      const lineWidth = (dimmed || legEdgeDim) ? 0.5  : active ? 2.5  : isShared ? 2.0  : 1.0;
+
+      sym.conds.forEach((c, ci) => {
+        const hub = state.nodes.find(h => h.hub && h.conds[0]===c);
+        if (!hub) return;
+        const hubActive = hub.id === selectedId || hub.id === hoveredId;
+        const edgeOpacity = (active || hubActive) ? 0.9 : opacity;
+        const edgeWidth   = (active || hubActive) ? 2.5 : lineWidth;
+
+        const ps   = w2s(sym.x, sym.y), ph = w2s(hub.x, hub.y);
+        const col  = DIAG_MAP[c]?.color || '#888';
+        const from = edgePt(ps.x, ps.y, SYM_R*scale+2, ph.x, ph.y);
+        const to   = edgePt(ph.x, ph.y, HUB_R*scale,   ps.x, ps.y);
+
+        // Curve shared edges slightly so multiple lines don't overlap
+        const mx = (from.x+to.x)/2, my = (from.y+to.y)/2;
+        // Perpendicular offset — direction alternates per condition index
+        const nx = -(to.y-from.y), ny = (to.x-from.x);
+        const nl = Math.sqrt(nx*nx+ny*ny)||1;
+        const curve = isShared ? (ci % 2 === 0 ? 1 : -1) * 18 * scale : 0;
+        const cpX = mx + (nx/nl)*curve;
+        const cpY = my + (ny/nl)*curve;
+
+        const hexOpacity = Math.round(edgeOpacity*255).toString(16).padStart(2,'0');
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.quadraticCurveTo(cpX, cpY, to.x, to.y);
+        ctx.strokeStyle = col + hexOpacity;
+        ctx.lineWidth = edgeWidth * scale;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      });
+    });
+  });
+
+  // ── Consequence zone — drawn below main map ──
+  const ZONE_Y_WORLD = offY + H * 0.32; // world-space Y divider
+  const zoneY = w2s(0, ZONE_Y_WORLD).y;
+  const hasConseqs = state.nodes.some(n => n.causeIds?.length > 0 && !n.inMainMap);
+
+  if (hasConseqs) {
+    // Subtle dashed divider line
+    ctx.save();
+    ctx.setLineDash([6*scale, 8*scale]);
+    ctx.beginPath(); ctx.moveTo(0, zoneY); ctx.lineTo(W, zoneY);
+    ctx.strokeStyle = '#1c1a1622';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Zone label
+    ctx.fillStyle = '#1c1a1628';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = `500 ${Math.max(8, 10*scale)}px DM Mono, monospace`;
+    ctx.fillText(lang === 'es' ? 'consecuencias' : 'secondary effects', 20, zoneY + 14*scale);
+    ctx.restore();
+  }
+
+  // ── cause → consequence edges — thin graphite, no arrow ──
+  state.nodes.filter(n => n.causeIds?.length > 0).forEach(conseq => {
+    conseq.causeIds.forEach(causeId => {
+      const cause = state.nodes.find(nd=>nd.id===causeId);
+      if (!cause) return;
+      const pc = w2s(cause.x, cause.y), pq = w2s(conseq.x, conseq.y);
+      const sel = conseq.id===selectedId || cause.id===selectedId || conseq.id===hoveredId || cause.id===hoveredId;
+      const fromR = cause.hub ? HUB_R*scale : SYM_R*scale+2;
+      const toR   = SYM_R*scale+2;
+      const from  = edgePt(pc.x, pc.y, fromR, pq.x, pq.y);
+      const to    = edgePt(pq.x, pq.y, toR,   pc.x, pc.y);
+      const legDashDim = legendHighlight && legendHighlight !== 'dash';
+      ctx.globalAlpha = legDashDim ? 0.04 : 1;
+
+      // Curved line, no arrow — position communicates the relationship
+      const mx = (from.x+to.x)/2, my = (from.y+to.y)/2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.quadraticCurveTo(mx, my - 20*scale, to.x, to.y);
+      ctx.strokeStyle = sel ? '#1c1a1699' : '#1c1a1630';
+      ctx.lineWidth = (sel ? 1.5 : 1) * scale;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([3*scale, 4*scale]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    });
+  });
+
+  // draw nodes — apply highlight filter + legend hover dimming
+  state.nodes.forEach(n => {
+    const p = w2s(n.x, n.y);
+    const sel = n.id === selectedId;
+    const hov = n.id === hoveredId;
+
+    // diagFilter dimming
+    const inFilter = n.hub
+      ? (highlightedDiags.size === 0 || highlightedDiags.has(n.conds[0]))
+      : (highlightedDiags.size === 0 || n.conds.some(c => highlightedDiags.has(c)));
+    const diagDimmed = !inFilter && highlightedDiags.size > 0;
+
+    // legendHighlight dimming
+    let legDimmed = false;
+    if (legendHighlight) {
+      const isHub     = n.hub;
+      const isSym     = !n.hub && !n.floating && n.conds.length === 1;
+      const isMulti   = !n.hub && !n.floating && n.conds.length > 1;
+      const isFloat   = n.floating || (!n.hub && n.conds.length === 0);
+      if (legendHighlight === 'hub'   && !isHub)   legDimmed = true;
+      if (legendHighlight === 'sym'   && !isSym)   legDimmed = true;
+      if (legendHighlight === 'multi' && !isMulti) legDimmed = true;
+      if (legendHighlight === 'float' && !isFloat) legDimmed = true;
+      if (['thin','thick','dash'].includes(legendHighlight)) legDimmed = true; // dim all nodes when hovering edges
+    }
+
+    const isConseq = !n.hub && n.causeIds?.length > 0 && !n.inMainMap;
+    ctx.globalAlpha = (diagDimmed || legDimmed) ? 0.1 : 1;
+    if (n.hub) drawHub(n, p, sel, hov);
+    else if (isConseq) drawConsequence(n, p, sel, hov);
+    else if (n.floating || n.conds.length === 0) drawFloating(n, p, sel, hov);
+    else drawSymptom(n, p, sel, hov);
+    ctx.globalAlpha = 1;
+  });
+}
+
+function drawHub(n, p, sel, hov) {
+  const col = DIAG_MAP[n.conds[0]]?.color || '#888';
+  const r = HUB_R * scale;
+
+  // glow on hover/select
+  if (sel || hov) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r+8, 0, Math.PI*2);
+    const g = ctx.createRadialGradient(p.x,p.y,r,p.x,p.y,r+12);
+    g.addColorStop(0, col+'40'); g.addColorStop(1,'transparent');
+    ctx.fillStyle = g; ctx.fill();
+  }
+
+  // fill + border
+  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+  ctx.fillStyle = col+'1a'; ctx.fill();
+  ctx.strokeStyle = sel ? col : col+(hov?'dd':'99');
+  ctx.lineWidth = (sel?2.8:2)*scale; ctx.stroke();
+
+  // clip text inside circle
+  ctx.save();
+  ctx.beginPath(); ctx.arc(p.x, p.y, r - 4*scale, 0, Math.PI*2); ctx.clip();
+
+  const lines = (n.label || n.name).split('\n');
+  const fontSize = Math.max(8, Math.min(12, r * 0.26));
+  const lineH    = fontSize * scale * 1.3;
+  const maxW     = (r - 8*scale) * 2;
+
+  ctx.fillStyle    = col;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `600 ${fontSize * scale}px Poppins, sans-serif`;
+
+  lines.forEach((l, i) => {
+    ctx.fillText(l, p.x, p.y + (i - (lines.length - 1) / 2) * lineH, maxW);
+  });
+  ctx.restore();
+}
+
+function drawSymptom(n, p, sel, hov) {
+  const r = SYM_R * scale;
+  if (sel||hov) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r+6, 0, Math.PI*2);
+    ctx.strokeStyle = '#1c1a1622'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  if (n.fromAI) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r+3, 0, Math.PI*2);
+    ctx.strokeStyle = AI_COLOR+'55'; ctx.lineWidth = 1.5*scale; ctx.stroke();
+  }
+  if (n.conds.length > 1) {
+    n.conds.forEach((c,i) => {
+      const a0 = (i/n.conds.length)*Math.PI*2-Math.PI/2;
+      const a1 = ((i+1)/n.conds.length)*Math.PI*2-Math.PI/2;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, a0, a1);
+      ctx.strokeStyle = DIAG_MAP[c]?.color||'#888';
+      ctx.lineWidth = 2.5*scale; ctx.stroke();
+    });
+  } else {
+    const col = DIAG_MAP[n.conds[0]]?.color||'#888';
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
+    ctx.fillStyle = sel||hov ? col : col+'bb'; ctx.fill();
+  }
+  // label
+  const words = n.name.split(' ');
+  const lns = []; let cur = '';
+  words.forEach(w => {
+    if ((cur+' '+w).trim().length > 16) { lns.push(cur.trim()); cur = w; }
+    else cur = (cur+' '+w).trim();
+  });
+  if (cur) lns.push(cur.trim());
+  ctx.fillStyle = sel ? '#1c1a16' : '#3a3530';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.font = `500 ${Math.max(7, 9*scale)}px Poppins, sans-serif`;
+  const lh = 11*scale;
+  lns.forEach((l,i) => ctx.fillText(l, p.x, p.y+r+5*scale+i*lh));
+  if (n.notes) {
+    ctx.fillStyle = '#4a8060';
+    ctx.font = `${Math.max(7,8*scale)}px DM Mono, monospace`;
+    ctx.fillText('●', p.x + r + 4*scale, p.y - r - 2*scale);
+  }
+}
+
+function drawConsequence(n, p, sel, hov) {
+  const r = (SYM_R + 2) * scale;
+
+  // Diamond shape
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(p.x,   p.y-r);   // top
+  ctx.lineTo(p.x+r, p.y);     // right
+  ctx.lineTo(p.x,   p.y+r);   // bottom
+  ctx.lineTo(p.x-r, p.y);     // left
+  ctx.closePath();
+  ctx.fillStyle   = sel||hov ? '#e8e4dc' : '#f0ede6';
+  ctx.fill();
+  ctx.strokeStyle = sel ? '#1c1a16cc' : '#1c1a1655';
+  ctx.lineWidth   = (sel ? 1.8 : 1.2) * scale;
+  ctx.stroke();
+  ctx.restore();
+
+  // Note indicator
+  if (n.notes) {
+    ctx.fillStyle = AI_COLOR;
+    ctx.font = `${Math.max(6,7*scale)}px DM Mono, monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('●', p.x + r + 3*scale, p.y - r);
+  }
+
+  // Label below diamond
+  const words = n.name.split(' ');
+  const lns = []; let cur = '';
+  words.forEach(w => {
+    if ((cur+' '+w).trim().length > 16) { lns.push(cur.trim()); cur = w; }
+    else cur = (cur+' '+w).trim();
+  });
+  if (cur) lns.push(cur.trim());
+  ctx.fillStyle = sel ? '#1c1a16' : '#6a6258';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.font = `400 ${Math.max(7,9*scale)}px Poppins, sans-serif`;
+  lns.forEach((l, i) => ctx.fillText(l, p.x, p.y + r + 5*scale + i*11*scale));
+}
+
+function drawFloating(n, p, sel, hov) {
+  const r = SYM_R * scale;
+  if (sel||hov) {
+    ctx.beginPath(); ctx.arc(p.x, p.y, r+8, 0, Math.PI*2);
+    ctx.strokeStyle = '#88776633'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  // dashed border circle
+  ctx.save();
+  ctx.setLineDash([3*scale, 3*scale]);
+  ctx.beginPath(); ctx.arc(p.x, p.y, r+1, 0, Math.PI*2);
+  ctx.strokeStyle = sel ? '#887766cc' : '#88776688';
+  ctx.lineWidth = 1.8*scale; ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(p.x, p.y, r-1, 0, Math.PI*2);
+  ctx.fillStyle = sel ? '#88776630' : '#88776615'; ctx.fill();
+  ctx.restore();
+  // confidence dot
+  if (n.confidence) {
+    const cCol = { alta:'#2e8c68', media:'#d4953a', baja:'#e05c3a', desconocido:'#aaa090' }[n.confidence]||'#aaa090';
+    ctx.beginPath(); ctx.arc(p.x+r+3, p.y-r-2, 3.5*scale, 0, Math.PI*2);
+    ctx.fillStyle = cCol; ctx.fill();
+  }
+  // label
+  const words = n.name.split(' ');
+  const lns = []; let cur = '';
+  words.forEach(w => {
+    if ((cur+' '+w).trim().length > 16) { lns.push(cur.trim()); cur = w; }
+    else cur = (cur+' '+w).trim();
+  });
+  if (cur) lns.push(cur.trim());
+  ctx.fillStyle = sel ? '#5a5040' : '#887766';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.font = `500 ${Math.max(7,9*scale)}px Poppins, sans-serif`;
+  lns.forEach((l,i) => ctx.fillText(l, p.x, p.y+r+5*scale+i*11*scale));
+  if (n.notes) {
+    ctx.fillStyle = AI_COLOR;
+    ctx.font = `${Math.max(7,8*scale)}px DM Mono, monospace`;
+    ctx.fillText('●', p.x+r+4*scale, p.y-r-2*scale);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HIT TEST
+// ═══════════════════════════════════════════════════════════
+function nodeAt(sx, sy) {
+  for (const n of [...state.nodes].reverse()) {
+    const r = (n.hub ? HUB_R+4 : SYM_R+10) * scale;
+    const p = w2s(n.x, n.y);
+    if ((sx-p.x)**2+(sy-p.y)**2 < r*r) return n;
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════════════
+let dragMoved = false; // track if mouse moved during drag
+
+canvas.addEventListener('mousedown', e => {
+  const n = nodeAt(e.offsetX, e.offsetY);
+  if (n) {
+    dragNodeId = n.id;
+    // Only highlight — don't open panel yet
+    selectedId = n.id;
+    renderNodeList();
+    draw();
+  } else {
+    dragNodeId = null;
+    selectedId = null;
+    closeRightPanel();
+  }
+  dragging = true;
+  dragMoved = false;
+  lastMx = e.offsetX; lastMy = e.offsetY;
+});
+
+canvas.addEventListener('mousemove', e => {
+  const sx = e.offsetX, sy = e.offsetY;
+  if (dragging) {
+    const dx = sx-lastMx, dy = sy-lastMy;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragMoved = true;
+    if (dragNodeId) {
+      const n = state.nodes.find(nd=>nd.id===dragNodeId);
+      if (n) { n.x+=dx/scale; n.y+=dy/scale; }
+    } else { offX-=dx/scale; offY-=dy/scale; }
+    lastMx=sx; lastMy=sy; draw();
+  } else {
+    const n = nodeAt(sx, sy);
+    const prev = hoveredId; hoveredId = n?n.id:null;
+    if (n && !n.hub) showTooltip(n, e.clientX, e.clientY);
+    else hideTooltip();
+    canvas.style.cursor = n ? 'pointer' : 'default';
+    if (hoveredId !== prev) draw();
+  }
+});
+
+canvas.addEventListener('mouseup', () => { dragging=false; dragNodeId=null; saveState(); });
+canvas.addEventListener('mouseleave', () => { dragging=false; dragNodeId=null; hoveredId=null; hideTooltip(); draw(); });
+
+// Double click → open diary panel
+canvas.addEventListener('dblclick', e => {
+  const n = nodeAt(e.offsetX, e.offsetY);
+  if (n && !n.hub) {
+    selectNode(n.id); // this opens the right panel
+  }
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  scale = Math.max(0.25, Math.min(4, scale * (e.deltaY>0?0.92:1.09)));
+  draw();
+}, { passive:false });
+
+// Touch
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t=e.touches[0], r=canvas.getBoundingClientRect();
+  const sx=t.clientX-r.left, sy=t.clientY-r.top;
+  const n=nodeAt(sx,sy);
+  if(n){dragNodeId=n.id;selectNode(n.id);}else dragNodeId=null;
+  dragging=true;lastMx=sx;lastMy=sy;
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const t=e.touches[0],r=canvas.getBoundingClientRect();
+  const sx=t.clientX-r.left,sy=t.clientY-r.top,dx=sx-lastMx,dy=sy-lastMy;
+  if(dragNodeId){const n=state.nodes.find(nd=>nd.id===dragNodeId);if(n){n.x+=dx/scale;n.y+=dy/scale;}}
+  else{offX-=dx/scale;offY-=dy/scale;}
+  lastMx=sx;lastMy=sy;draw();
+},{passive:false});
+
+canvas.addEventListener('touchend',()=>{dragging=false;dragNodeId=null;saveState();});
+
+// ═══════════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+function showTooltip(n, cx, cy) {
+  const tags = n.conds.map(c=>DIAG_MAP[c]?.label.replace('\n',' ')||c).join(' · ');
+  tooltip.textContent = n.name + (tags ? `  —  ${tags}` : '') + '  ·  doble click para abrir';
+  tooltip.style.left = (cx+12)+'px'; tooltip.style.top = (cy-10)+'px';
+  tooltip.classList.add('show');
+}
+function hideTooltip() { tooltip.classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════
+// SELECT / RIGHT PANEL
+// ═══════════════════════════════════════════════════════════
+function selectNode(id, openPanel = true) {
+  selectedId = id;
+  const n = state.nodes.find(nd=>nd.id===id);
+  const rp = document.getElementById('right-panel');
+  if (n && !n.hub && openPanel) {
+    document.getElementById('rp-title').textContent = n.name;
+    document.getElementById('rp-tags').innerHTML = n.conds.map(c => {
+      const d = DIAG_MAP[c]; if(!d) return '';
+      return `<span class="rp-tag" style="color:${d.color};border-color:${d.color}">${d.label}</span>`;
+    }).join('');
+    const aiNote = document.getElementById('rp-ai-note');
+    let aiHtml = '';
+    if (n.reason) {
+      const confColor = { alta:'#2e8c68', media:'#d4953a', baja:'#e05c3a', desconocido:'#aaa090' }[n.confidence]||'#aaa090';
+      const confLabel = { alta:'confianza alta', media:'confianza media', baja:'confianza baja', desconocido:'origen incierto' }[n.confidence]||'';
+      aiHtml += `<div class="rp-ai-note">✦ ${n.reason}${confLabel?` <span style="color:${confColor};font-style:normal;font-size:0.65rem">[${confLabel}]</span>`:''}`;
+      if (n.causeIds && n.causeIds.length > 0) {
+        const causeNames = n.causeIds.map(id=>state.nodes.find(nd=>nd.id===id)?.name||'').filter(Boolean);
+        aiHtml += `<br><span style="font-size:0.68rem;font-style:normal">← generado por: <strong>${causeNames.join(', ')}</strong></span>`;
+      }
+      aiHtml += `</div>`;
+    } else if (n.floating || n.conds.length===0) {
+      aiHtml = `<div class="rp-ai-note" style="border-color:rgba(136,119,102,0.3);background:rgba(136,119,102,0.05)">? Origen desconocido — usa "Analizar origen" para que la IA busque conexiones.</div>`;
+    }
+    aiNote.innerHTML = aiHtml;
+    document.getElementById('rp-context').value = n.context || '';
+    document.getElementById('rp-notes').value = n.notes || '';
+    // Show promote button only for consequence nodes not yet in main map
+    const isConseq = n.causeIds?.length > 0 && !n.inMainMap;
+    document.getElementById('rp-promote').style.display = isConseq ? 'block' : 'none';
+    rp.classList.add('open');
+  } else {
+    rp.classList.remove('open');
+  }
+  renderNodeList();
+  draw();
+}
+
+function closeRightPanel() {
+  selectedId = null;
+  document.getElementById('right-panel').classList.remove('open');
+  renderNodeList();
+  draw();
+}
+
+function saveNote() {
+  if (!selectedId) return;
+  const n = state.nodes.find(nd=>nd.id===selectedId);
+  if (n) {
+    n.notes   = document.getElementById('rp-notes').value;
+    n.context = document.getElementById('rp-context').value;
+  }
+  saveState(); draw(); showToast('Guardado');
+}
+
+function promoteToMain() {
+  if (!selectedId) return;
+  const n = state.nodes.find(nd=>nd.id===selectedId);
+  if (!n) return;
+  n.inMainMap = true;
+  // Move it up into the main map area near its causes
+  const causes = (n.causeIds||[]).map(id=>state.nodes.find(nd=>nd.id===id)).filter(Boolean);
+  if (causes.length > 0) {
+    n.x = causes.reduce((s,c)=>s+c.x,0)/causes.length + (Math.random()-0.5)*120;
+    n.y = causes.reduce((s,c)=>s+c.y,0)/causes.length + 80;
+  }
+  document.getElementById('rp-promote').style.display = 'none';
+  saveState(); draw();
+  showToast(lang==='es' ? 'Movido al mapa principal' : 'Moved to main map');
+}
+
+function deleteSelected() {
+  if (!selectedId) return;
+  selectedId = null;
+  document.getElementById('right-panel').classList.remove('open');
+  saveState(); renderNodeList(); draw();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DIAGNOSIS PROFILES — questions per condition
+// ═══════════════════════════════════════════════════════════
+const DIAG_PROFILES = {
+  tda: {
+    title: 'TDA / TDAH',
+    desc: 'Cuéntame cómo se manifiesta tu TDA para sugerirte síntomas más precisos.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Presentación principal',
+        options:['Inatento predominante','Hiperactivo predominante','Combinado','No sé / mixto'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 8' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Estrés','Ruido / ambiente','Tareas largas','Interacciones sociales','Sueño irregular','Pantallas'] },
+      { id:'known',   type:'text', label:'Síntomas que ya sabes que tienes',
+        placeholder:'ej. procrastinación, hiperfoco, olvidos...' },
+    ]
+  },
+  tlp: {
+    title: 'TLP — Borderline',
+    desc: 'El TLP se expresa diferente en cada persona. Esto ayuda a personalizar las sugerencias.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Patrón más reconocible en ti',
+        options:['Miedo al abandono intenso','Cambios de identidad','Impulsividad','Vaivenes emocionales rápidos','Relaciones intensas','Disociación frecuente'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 28' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Rechazo percibido','Conflictos relacionales','Soledad','Estrés laboral','Cambios inesperados','Críticas'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. flashbacks emocionales, vergüenza intensa...' },
+    ]
+  },
+  an: {
+    title: 'Anorexia Nerviosa',
+    desc: 'La AN tiene subtipos muy distintos. Esto es importante para que las sugerencias sean precisas.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Subtipo que te describe mejor',
+        options:['Restrictivo','Atracón / purga','Atracón sin purga','Mixto / cambia','Predomina distorsión corporal'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 16' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Estrés emocional','Situaciones sociales','Cambios corporales','Control / incertidumbre','Comentarios externos','Comparaciones'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. atracones nocturnos, distorsión corporal, rituales...' },
+    ]
+  },
+  aut: {
+    title: 'Rasgos Autistas',
+    desc: 'El perfil autista es muy individual. Tu experiencia específica cambia mucho las sugerencias.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Áreas más presentes en ti',
+        options:['Sensorial (hiper/hipo)','Social / comunicación','Rutinas y rigidez','Intereses intensos','Fatiga autista','Enmascaramiento'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 35' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Sobrecarga sensorial','Cambios de rutina','Interacción social intensa','Imprevistos','Entornos ruidosos','Exigencias sociales'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. meltdowns, shutdowns, hipersensibilidad al ruido...' },
+    ]
+  },
+  cptsd: {
+    title: 'C-PTSD',
+    desc: 'El C-PTSD varía mucho según el tipo de trauma y cómo se procesa. Esto personaliza las sugerencias.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Manifestación más presente',
+        options:['Hipervigilancia','Disociación','Flashbacks emocionales','Vergüenza tóxica','Dificultad de confianza','Colapso ante críticas'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 32' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Conflictos relacionales','Críticas','Abandono percibido','Estrés acumulado','Sensaciones corporales','Entornos de alta demanda'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. disociación bajo estrés, hipervigilancia en grupos...' },
+    ]
+  },
+  bi: {
+    title: 'Trastorno Bipolar',
+    desc: 'El bipolar I, II y ciclotimia tienen perfiles distintos. Cuéntame cómo se expresa en ti.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Tipo o patrón',
+        options:['Bipolar I (manía completa)','Bipolar II (hipomanía)','Ciclotimia','Ciclos rápidos','Mixtos frecuentes','No sé el subtipo exacto'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 24' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Falta de sueño','Estrés elevado','Cambios de estación','Conflictos','Estimulación excesiva','Cambios hormonales'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. hiperfoco en manía, aislamiento en depresión...' },
+    ]
+  },
+  anx: {
+    title: 'Ansiedad Generalizada',
+    desc: 'La ansiedad se expresa diferente en cada persona. Esto ayuda a que las sugerencias sean precisas.',
+    fields: [
+      { id:'subtype', type:'chips', label:'Cómo se manifiesta más en ti',
+        options:['Rumiación constante','Síntomas físicos (tensión, nauseas)','Evitación','Anticipación catastrófica','Ansiedad social','Ansiedad de rendimiento'] },
+      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 22' },
+      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
+        options:['Incertidumbre','Situaciones sociales','Rendimiento / evaluación','Salud','Dinero / trabajo','Relaciones'] },
+      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
+        placeholder:'ej. insomnio, tensión muscular, preocupación constante...' },
+    ]
+  },
+};
+
+let currentDiagModalId = null;
+
+function openDiagModal(id) {
+  const profile = DIAG_PROFILES[id];
+  if (!profile) return;
+  currentDiagModalId = id;
+  const diag = DIAG_MAP[id];
+  document.getElementById('diagmodal-title').textContent = profile.title;
+  document.getElementById('diagmodal-desc').textContent = profile.desc;
+
+  const saved = state.diagProfiles?.[id] || {};
+  const body = document.getElementById('diagmodal-body');
+  body.innerHTML = profile.fields.map(f => {
+    if (f.type === 'chips') {
+      const chips = f.options.map(o => {
+        const on = (saved[f.id]||[]).includes(o);
+        return `<span class="chip ${on?'on':''}" style="${on?`background:${diag.color}`:''}"\
+          onclick="toggleChip(this,'${diag.color}')">${o}</span>`;
+      }).join('');
+      return `<div class="profile-field"><label>${f.label}</label><div class="chip-group" data-field="${f.id}">${chips}</div></div>`;
+    }
+    if (f.type === 'number') {
+      return `<div class="profile-field"><label>${f.label}</label>\
+        <input type="number" data-field="${f.id}" placeholder="${f.placeholder}" min="1" max="100" value="${saved[f.id]||''}"></div>`;
+    }
+    return `<div class="profile-field"><label>${f.label}</label>\
+      <input type="text" data-field="${f.id}" placeholder="${f.placeholder}" value="${saved[f.id]||''}"></div>`;
+  }).join('');
+
+  document.getElementById('diagmodal').classList.add('show');
+}
+
+function toggleChip(el, color) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) {
+    el.style.background = color; el.style.borderColor = 'transparent'; el.style.color = 'white';
+  } else {
+    el.style.background = ''; el.style.borderColor = ''; el.style.color = '';
+  }
+}
+
+function saveDiagProfile() {
+  if (!currentDiagModalId) return;
+  if (!state.diagProfiles) state.diagProfiles = {};
+  const profile = DIAG_PROFILES[currentDiagModalId];
+  const saved = {};
+  profile.fields.forEach(f => {
+    if (f.type === 'chips') {
+      const group = document.querySelector(`[data-field="${f.id}"]`);
+      saved[f.id] = [...group.querySelectorAll('.chip.on')].map(c=>c.textContent);
+    } else {
+      const el = document.querySelector(`input[data-field="${f.id}"]`);
+      if (el) saved[f.id] = el.value.trim();
+    }
+  });
+  state.diagProfiles[currentDiagModalId] = saved;
+  saveState();
+  renderDiagList();
+  closeDiagModal();
+  showToast('Perfil guardado — las sugerencias serán más precisas');
+}
+
+function closeDiagModal() {
+  document.getElementById('diagmodal').classList.remove('show');
+  currentDiagModalId = null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════════════════════
+function toggleAccordion(id) {
+  const sec  = document.getElementById(id);
+  const btn  = sec.querySelector('.accordion-header');
+  const body = sec.querySelector('.accordion-body');
+  const open = btn.classList.toggle('open');
+  if (id === 'acc-list') {
+    body.style.display = open ? 'flex' : 'none';
+    body.style.flexDirection = 'column';
+    body.style.overflow = 'hidden';
+    body.style.flex = open ? '1' : '0';
+  } else {
+    body.style.display = open ? 'block' : 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DIAGNOSIS PANEL — multi-select with canvas filter
+// ═══════════════════════════════════════════════════════════
+function renderDiagList() {
+  const el = document.getElementById('diag-list');
+  el.innerHTML = DIAGNOSES.map(d => {
+    const active     = state.selectedDiags.includes(d.id);
+    const highlighted = highlightedDiags.has(d.id);
+    const hasProfile = state.diagProfiles?.[d.id] && Object.values(state.diagProfiles[d.id]).some(v=>v?.length>0);
+    return `<div class="diag-item ${active?'active':''}" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:9px;flex:1" onclick="toggleDiag('${d.id}')">
+        <div class="diag-swatch" style="background:${d.color}${active?'':'44'}"></div>
+        <span class="diag-name" style="${active?`color:${d.color}`:''}">
+          ${d.label.replace('\n',' ')}
+        </span>
+      </div>
+      ${active ? `
+        <button onclick="event.stopPropagation();toggleHighlight('${d.id}')"
+          title="Filtrar en el mapa"
+          style="background:${highlighted?d.color:'none'};border:1px solid ${highlighted?d.color:'var(--border)'};
+                 color:${highlighted?'white':'var(--light)'};border-radius:3px;
+                 padding:1px 7px;font-size:0.6rem;font-family:'DM Mono',monospace;cursor:pointer;
+                 transition:all 0.12s;margin-right:4px">
+          ${highlighted?'✓':'○'}
+        </button>
+        <button onclick="event.stopPropagation();openDiagModal('${d.id}')"
+          style="background:none;border:none;cursor:pointer;font-size:0.68rem;
+                 padding:2px 4px;color:${hasProfile?d.color:'var(--light)'};font-family:'DM Mono',monospace">
+          ${hasProfile?'✎':'…'}
+        </button>` : ''}
+    </div>`;
+  }).join('');
+
+  // Count badge
+  const count = state.selectedDiags.length;
+  const countEl = document.getElementById('acc-diags-count');
+  if (countEl) countEl.textContent = count > 0 ? count : '';
+
+  updateGenBtn();
+  renderAddChecks();
+}
+
+function toggleHighlight(id) {
+  if (highlightedDiags.has(id)) highlightedDiags.delete(id);
+  else highlightedDiags.add(id);
+  renderDiagList();
+  draw();
+}
+
+function toggleDiag(id) {
+  if (state.selectedDiags.includes(id)) {
+    state.selectedDiags = state.selectedDiags.filter(d=>d!==id);
+  } else {
+    state.selectedDiags.push(id);
+    // Auto-open profile modal for new diagnosis
+    setTimeout(() => openDiagModal(id), 200);
+  }
+  const hubIds = state.selectedDiags.map(d=>'hub-'+d);
+  state.nodes = state.nodes.filter(n => !n.hub || hubIds.includes(n.id));
+  state.selectedDiags.forEach(d => {
+    if (!state.nodes.find(n=>n.id==='hub-'+d)) {
+      const diag = DIAG_MAP[d];
+      state.nodes.push({ id:'hub-'+d, name:diag.label, label:diag.label, conds:[d], hub:true, x:0, y:0, _placed:false });
+    }
+  });
+  initLayout(); saveState(); renderDiagList(); renderNodeList(); draw();
+}
+
+function updateGenBtn() {
+  const btn = document.getElementById('btn-gen');
+  btn.disabled = state.selectedDiags.length === 0;
+}
+
+function renderAddChecks() {
+  const el = document.getElementById('add-checks');
+  el.innerHTML = state.selectedDiags.map(id => {
+    const d = DIAG_MAP[id];
+    return `<label class="cond-check"><input type="checkbox" value="${id}"><span class="cond-pill p-${id}">${d.label.split(/[—\/]/)[0].trim()}</span></label>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD MANUAL NODE
+// ═══════════════════════════════════════════════════════════
+function addNodeManual() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { showToast('Escribe el nombre del síntoma'); return; }
+  const conds = [...document.querySelectorAll('#add-checks input:checked')].map(c=>c.value);
+  const context = document.getElementById('inp-context').value.trim();
+  const hub = conds.length > 0 ? state.nodes.find(n=>n.hub&&n.conds[0]===conds[0]) : null;
+  const node = {
+    id: 'n'+(state.idCounter++), name, conds, context,
+    floating: conds.length === 0,
+    x: (hub ? hub.x : offX) + (Math.random()-0.5)*160,
+    y: (hub ? hub.y : offY) + (conds.length > 0 ? 90 + Math.random()*100 : Math.random()*200 - 100),
+    _placed: true, fromAI: false, causeIds: [],
+  };
+  state.nodes.push(node);
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-context').value = '';
+  document.getElementById('context-field').classList.remove('open');
+  document.querySelectorAll('#add-checks input').forEach(c=>c.checked=false);
+  saveState(); renderNodeList(); draw();
+  showToast(conds.length === 0 ? 'Nodo flotante agregado' : 'Síntoma agregado');
+}
+
+function toggleContextHint(val) {
+  document.getElementById('context-field').classList.toggle('open', val.length > 1);
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI ORIGIN ANALYSIS — find what causes a symptom
+// ═══════════════════════════════════════════════════════════
+async function addWithAIAnalysis() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { showToast('Escribe el nombre del síntoma primero'); return; }
+  const apiKey = localStorage.getItem('sm_apikey');
+  if (!apiKey) { openApiModal(); return; }
+
+  // First add as floating node
+  const nodeId = 'n'+(state.idCounter++);
+  const context = document.getElementById('inp-context').value.trim();
+  const node = {
+    id: nodeId, name, conds: [], floating: true, context,
+    x: offX + (Math.random()-0.5)*200,
+    y: offY + (Math.random()-0.5)*150,
+    _placed: true, fromAI: true, causeIds: [],
+  };
+  state.nodes.push(node);
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-context').value = '';
+  document.getElementById('context-field').classList.remove('open');
+  document.querySelectorAll('#add-checks input').forEach(c=>c.checked=false);
+  renderNodeList(); draw();
+
+  showLoading(`Analizando origen de "${name}"...`);
+
+  const diagLabels = state.selectedDiags.map(d=>DIAG_MAP[d].label).join(', ');
+  const existingSymptoms = state.nodes
+    .filter(n=>!n.hub && n.id!==nodeId)
+    .map(n=>({ id:n.id, name:n.name, conds:n.conds }));
+
+  const prompt = `Eres un asistente de psicoeducación para personas con diagnósticos de salud mental.
+
+El usuario tiene los siguientes diagnósticos: ${diagLabels}.
+${state.diagProfiles?.[state.selectedDiags[0]] ? `Perfil: ${JSON.stringify(state.diagProfiles)}` : ''}
+
+Síntomas actuales en su mapa:
+${existingSymptoms.map(s=>`- [${s.id}] "${s.name}"${s.context?` (aparece: ${s.context})`:''} (${s.conds.map(c=>DIAG_MAP[c]?.label||c).join(', ')||'sin diagnóstico'})`).join('\n')}
+
+El usuario acaba de agregar: "${name}"${node.context ? `\nContexto que dio: "${node.context}"` : ''}
+
+Tu tarea: analiza si "${name}" podría ser una CONSECUENCIA de alguno de los síntomas o diagnósticos que ya están en el mapa, y si el/los diagnósticos del usuario pueden explicarlo.
+
+Responde SOLO con JSON válido, sin texto extra:
+{
+  "analysis": "una o dos frases explicando el origen probable de este síntoma en el contexto de este perfil",
+  "causeIds": ["id1","id2"],
+  "diagConds": ["tda","cptsd"],
+  "confidence": "alta|media|baja|desconocido"
+}
+
+- causeIds: IDs de síntomas del mapa que causan o contribuyen a "${name}". Puede ser array vacío.
+- diagConds: diagnósticos del usuario que podrían explicar directamente "${name}". Puede ser array vacío.
+- Si no hay relación clara, devuelve causeIds:[], diagConds:[], confidence:"desconocido"
+- IDs disponibles: ${existingSymptoms.map(s=>s.id).join(', ')}
+- Diagnósticos disponibles: ${state.selectedDiags.join(', ')}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+
+    // Update node with findings
+    const n = state.nodes.find(nd=>nd.id===nodeId);
+    if (n) {
+      n.reason = parsed.analysis;
+      n.confidence = parsed.confidence;
+      n.causeIds = (parsed.causeIds||[]).filter(id=>state.nodes.find(nd=>nd.id===id));
+      if ((parsed.diagConds||[]).length > 0) {
+        n.conds = parsed.diagConds.filter(c=>state.selectedDiags.includes(c));
+        n.floating = n.conds.length === 0;
+      }
+    // Position in consequence zone (below divider)
+    if (n.causeIds.length > 0) {
+      const causes = n.causeIds.map(id=>state.nodes.find(nd=>nd.id===id)).filter(Boolean);
+      const avgX = causes.reduce((s,c)=>s+c.x,0)/causes.length;
+      n.x = avgX + (Math.random()-0.5)*80;
+      n.y = offY + H * 0.38 + Math.random()*60;
+    }
+    }
+    hideLoading();
+    saveState(); renderNodeList(); draw();
+    selectNode(nodeId);
+    const confLabel = { alta:'alta', media:'media', baja:'baja', desconocido:'incierto' }[parsed.confidence] || '';
+    showToast(`Origen analizado — confianza ${confLabel}`);
+  } catch(err) {
+    hideLoading();
+    showToast('Error al analizar: ' + err.message);
+    console.error(err);
+  }
+}
+function renderNodeList() {
+  const syms = state.nodes.filter(n=>!n.hub);
+  const el = document.getElementById('node-list');
+  const countEl = document.getElementById('acc-list-count');
+  if (countEl) countEl.textContent = syms.length > 0 ? syms.length : '';
+  if (syms.length === 0) {
+    el.innerHTML = '<p style="font-family:\'DM Mono\',monospace;font-size:0.62rem;color:var(--light);text-align:center;padding:16px">sin síntomas aún</p>';
+    return;
+  }
+  el.innerHTML = syms.map(n=>`
+    <div class="node-row ${n.id===selectedId?'selected':''}" onclick="selectNode('${n.id}')">
+      <div class="node-row-bar" style="background:${
+        (n.floating||n.conds.length===0) ? '#88776666' :
+        n.conds.length>1 ? `linear-gradient(180deg,${n.conds.map(c=>DIAG_MAP[c]?.color||'#888').join(',')})` :
+        DIAG_MAP[n.conds[0]]?.color||'#888'
+      }"></div>
+      <div class="node-row-name" style="${(n.floating||n.conds.length===0)?'color:var(--muted)':''}">${n.name}</div>
+      <div class="node-row-dots">
+        ${n.fromAI?'<span class="ai-dot">✦</span>':''}
+        ${(n.floating||n.conds.length===0)?'<span style="font-family:\'DM Mono\',monospace;font-size:0.55rem;color:#aaa090">?</span>':''}
+        ${n.notes?'<span style="font-size:0.55rem;color:var(--ai-glow)">●</span>':''}
+        ${n.conds.map(c=>`<div class="dot-xs" style="background:${DIAG_MAP[c]?.color||'#888'}"></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI GENERATION
+// ═══════════════════════════════════════════════════════════
+async function generateWithAI() {
+  const apiKey = localStorage.getItem('sm_apikey');
+  if (!apiKey) { openApiModal(); return; }
+  if (state.selectedDiags.length === 0) { showToast('Selecciona al menos un diagnóstico'); return; }
+
+  showLoading('Consultando IA...');
+
+  const diagLabels = state.selectedDiags.map(d=>DIAG_MAP[d].label).join(', ');
+  const existingSymptoms = state.nodes.filter(n=>!n.hub);
+  const existingNames = existingSymptoms.map(n=>n.name+(n.context?` (aparece: ${n.context})`:''));
+
+  // Build rich profile context
+  const profileContext = state.selectedDiags.map(id => {
+    const p = state.diagProfiles?.[id];
+    if (!p) return null;
+    const diag = DIAG_MAP[id];
+    const parts = [];
+    if (p.subtype?.length)  parts.push(`subtipo/patrón: ${Array.isArray(p.subtype)?p.subtype.join(', '):p.subtype}`);
+    if (p.age)              parts.push(`diagnosticado a los ${p.age} años`);
+    if (p.triggers?.length) parts.push(`detonadores: ${Array.isArray(p.triggers)?p.triggers.join(', '):p.triggers}`);
+    if (p.known)            parts.push(`síntomas conocidos propios: ${p.known}`);
+    return parts.length ? `${diag.label}: ${parts.join(' | ')}` : null;
+  }).filter(Boolean).join('\n');
+
+  const prompt = `Eres un asistente de psicoeducación para personas que YA tienen diagnósticos de salud mental confirmados por profesionales.
+
+PERFIL DEL USUARIO:
+Diagnósticos: ${diagLabels}.
+${profileContext ? `\nInformación específica por diagnóstico:\n${profileContext}` : ''}
+
+Síntomas que ya tiene en su mapa:
+${existingNames.length ? existingNames.map(n=>`- ${n}`).join('\n') : '- ninguno aún'}
+
+Tu tarea: sugerir 8-12 síntomas o experiencias relevantes para ESTE perfil diagnóstico específico. 
+- Enfócate en los puntos de intersección entre sus diagnósticos.
+- Usa la información de perfil (subtipo, detonadores, síntomas conocidos) para ser preciso.
+- NO repitas síntomas que ya existen en el mapa.
+- Si el perfil indica un subtipo específico (ej. AN con atracones, no restrictiva), ajusta las sugerencias a ese subtipo.
+
+Responde SOLO con JSON válido, sin texto adicional:
+{
+  "symptoms": [
+    {
+      "name": "nombre corto (máx 4 palabras)",
+      "conds": ["id1","id2"],
+      "reason": "frase corta explicando por qué aparece en este perfil específico"
+    }
+  ]
+}
+
+IDs válidos: ${state.selectedDiags.join(', ')}.
+Cada síntoma debe tener 1-3 condiciones.
+Usa lenguaje de primera persona, no patologizante.
+Enfócate en experiencias reales: emocionales, cognitivas, corporales, relacionales.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Error de API');
+    }
+
+    const data = await res.json();
+    const text = data.content.map(b=>b.text||'').join('').trim();
+    const cleaned = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(cleaned);
+
+    pendingSuggestions = (parsed.symptoms || []).filter(s =>
+      s.name && s.conds && s.conds.length > 0 &&
+      !state.nodes.find(n=>!n.hub && n.name.toLowerCase()===s.name.toLowerCase())
+    );
+
+    hideLoading();
+    showReviewPanel();
+  } catch(err) {
+    hideLoading();
+    showToast('Error: ' + err.message);
+    console.error(err);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REVIEW PANEL
+// ═══════════════════════════════════════════════════════════
+function showReviewPanel() {
+  const el = document.getElementById('review-list');
+  if (pendingSuggestions.length === 0) { showToast('No hay sugerencias nuevas'); return; }
+  el.innerHTML = pendingSuggestions.map((s,i) => {
+    const tags = s.conds.map(c=>{
+      const d=DIAG_MAP[c]; if(!d) return '';
+      return `<span class="rp-tag" style="color:${d.color};border-color:${d.color};font-size:0.58rem">${d.label.split(/[—\/]/)[0].trim()}</span>`;
+    }).join('');
+    return `
+    <div class="suggest-item" id="sug-${i}">
+      <div class="suggest-name">${s.name}</div>
+      <div class="suggest-reason">${s.reason}</div>
+      <div class="suggest-conds">${tags}</div>
+      <div class="suggest-actions">
+        <button class="btn-accept" onclick="acceptSuggestion(${i})">✓ Aceptar</button>
+        <button class="btn-reject" onclick="rejectSuggestion(${i})">✗ Rechazar</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('review-panel').classList.add('show');
+}
+
+function closeReview() {
+  document.getElementById('review-panel').classList.remove('show');
+}
+
+function acceptSuggestion(i) {
+  const s = pendingSuggestions[i];
+  if (!s) return;
+  const validConds = s.conds.filter(c=>state.selectedDiags.includes(c));
+  if (validConds.length === 0) { rejectSuggestion(i); return; }
+  const hub = state.nodes.find(n=>n.hub&&n.conds[0]===validConds[0]);
+  const node = {
+    id: 'n'+(state.idCounter++), name: s.name,
+    conds: validConds, fromAI: true, reason: s.reason,
+    x: (hub?hub.x:offX) + (Math.random()-0.5)*160,
+    y: (hub?hub.y:offY) + 90 + Math.random()*120,
+    _placed: true,
+  };
+  state.nodes.push(node);
+  document.getElementById('sug-'+i).style.opacity = '0.3';
+  document.getElementById('sug-'+i).style.pointerEvents = 'none';
+  pendingSuggestions[i] = null;
+  saveState(); renderNodeList(); draw();
+}
+
+function rejectSuggestion(i) {
+  document.getElementById('sug-'+i).style.opacity = '0.3';
+  document.getElementById('sug-'+i).style.pointerEvents = 'none';
+  pendingSuggestions[i] = null;
+}
+
+function acceptAll() {
+  pendingSuggestions.forEach((_,i) => { if(pendingSuggestions[i]) acceptSuggestion(i); });
+  setTimeout(closeReview, 300);
+}
+
+// ═══════════════════════════════════════════════════════════
+// API KEY MODAL
+// ═══════════════════════════════════════════════════════════
+function openApiModal() {
+  const saved = localStorage.getItem('sm_apikey');
+  if (saved) document.getElementById('api-input').value = saved;
+  document.getElementById('apimodal').classList.add('show');
+}
+function closeApiModal() { document.getElementById('apimodal').classList.remove('show'); }
+function saveApiKey() {
+  const key = document.getElementById('api-input').value.trim();
+  if (!key.startsWith('sk-ant')) { showToast('Key inválida — debe empezar con sk-ant'); return; }
+  localStorage.setItem('sm_apikey', key);
+  closeApiModal();
+  showToast('API key guardada');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════════════════
+function saveState() {
+  try { localStorage.setItem('sm_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('sm_state');
+    return s ? JSON.parse(s) : null;
+  } catch(e) { return null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportMap() {
+  const link = document.createElement('a');
+  link.download = 'symptommap.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Mapa exportado como imagen');
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg || 'Cargando...';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════
+// i18n
+// ═══════════════════════════════════════════════════════════
+const STRINGS = {
+  en: {
+    tagline: 'A tool to map how your diagnoses connect through shared symptoms — not to diagnose, but to understand.',
+    disclaimer: 'This tool is for people who already have one or more mental health diagnoses confirmed by a professional. It is not a diagnostic tool.',
+    howTitle: 'How it works',
+    h1:'Select your diagnoses', b1:'From the left panel. Each one you add will ask a few questions to personalize your map.',
+    h2:'Generate suggestions',  b2:'The AI will suggest symptoms based on your specific profile. Accept, reject, or edit each one.',
+    h3:'Make it yours',         b3:'Add your own symptoms, move nodes freely, and double-click any node to open its notes.',
+    back:'← Back', start:'Start →', next:'→',
+    myDiags: 'My diagnoses', addSymptom: 'Add symptom',
+    namePlaceholder: 'e.g. nausea, insomnia...',
+    whenLabel: 'When / how does it appear? (optional)',
+    whenPlaceholder: 'e.g. in crowded places, after eating, when waking up...',
+    condLabel: 'Condition(s) — optional',
+    btnAdd: '+ Add', btnAnalyze: '✦ Analyze origin',
+    addHint: 'No condition → floating node.  "Analyze origin" → AI finds what generates it.',
+    suggestedTitle: 'Suggested symptoms',
+    acceptAll: 'Accept all', close: 'Close',
+    saveNote: 'Save', delete: 'Delete',
+    whenNote: 'When / how does it appear?',
+    notesLabel: 'Notes',
+    notesPlaceholder: 'What triggers it? How does it feel...',
+    legTitle: 'Legend', legHub: 'Diagnosis', legSym: 'Symptom (1 diagnosis)',
+    legMulti: 'Symptom (shared)', legFloat: 'Unknown origin',
+    legThin: 'Individual connection', legThick: 'Shared connection', legDash: 'Consequence →',
+    legBtn: '? legend',
+    topHint: 'click · move  ·  double-click · open notes',
+    loading: 'Consulting AI...', analyzing: 'Analyzing origin...',
+    profileSaved: 'Profile saved — suggestions will be more accurate',
+    noteSaved: 'Saved', nodeAdded: 'Symptom added', floatAdded: 'Floating node added',
+    needName: 'Enter a symptom name', needDiag: 'Select at least one diagnosis',
+    originAnalyzed: 'Origin analyzed — confidence',
+  },
+  es: {
+    tagline: 'Una herramienta para mapear cómo tus diagnósticos se conectan a través de síntomas compartidos — no para diagnosticar, sino para entenderte.',
+    disclaimer: 'Esta herramienta está diseñada para personas que ya tienen uno o más diagnósticos de salud mental confirmados por un profesional. No es una herramienta diagnóstica.',
+    howTitle: 'Cómo funciona',
+    h1:'Selecciona tus diagnósticos', b1:'Desde el panel izquierdo. Cada uno que agregues incluirá preguntas para personalizar tu mapa.',
+    h2:'Genera sugerencias',          b2:'La IA sugerirá síntomas según tu perfil específico. Acepta, rechaza o edita cada uno.',
+    h3:'Hazlo tuyo',                  b3:'Agrega tus propios síntomas, mueve los nodos libremente, y doble click en cualquier nodo para abrir sus notas.',
+    back:'← Volver', start:'Empezar →', next:'→',
+    myDiags: 'Mis diagnósticos', addSymptom: 'Agregar síntoma',
+    namePlaceholder: 'ej. náuseas, insomnio...',
+    whenLabel: '¿Cuándo / cómo aparece? (opcional)',
+    whenPlaceholder: 'ej. en espacios con mucha gente, después de comer, al despertar...',
+    condLabel: 'Condición(es) — opcional',
+    btnAdd: '+ Agregar', btnAnalyze: '✦ Analizar origen',
+    addHint: 'Sin condición → nodo flotante.  "Analizar origen" → la IA busca qué síntomas lo generan.',
+    suggestedTitle: 'Síntomas sugeridos',
+    acceptAll: 'Aceptar todos', close: 'Cerrar',
+    saveNote: 'Guardar', delete: 'Eliminar',
+    whenNote: '¿Cuándo / cómo aparece?',
+    notesLabel: 'Notas',
+    notesPlaceholder: '¿Qué lo detona? ¿Cómo se siente...',
+    legTitle: 'Leyenda', legHub: 'Diagnóstico', legSym: 'Síntoma (1 diagnóstico)',
+    legMulti: 'Síntoma (compartido)', legFloat: 'Origen desconocido',
+    legThin: 'Conexión individual', legThick: 'Conexión compartida', legDash: 'Consecuencia →',
+    legBtn: '? leyenda',
+    topHint: 'click · mover  ·  doble click · abrir notas',
+    loading: 'Consultando IA...', analyzing: 'Analizando origen...',
+    profileSaved: 'Perfil guardado — las sugerencias serán más precisas',
+    noteSaved: 'Guardado', nodeAdded: 'Síntoma agregado', floatAdded: 'Nodo flotante agregado',
+    needName: 'Escribe el nombre del síntoma', needDiag: 'Selecciona al menos un diagnóstico',
+    originAnalyzed: 'Origen analizado — confianza',
+  }
+};
+
+let lang = state.lang || 'en';
+
+function t(key) { return STRINGS[lang]?.[key] || STRINGS.en[key] || key; }
+
+function applyLang() {
+  // Onboarding
+  document.getElementById('ob-tagline').textContent   = t('tagline');
+  document.getElementById('ob-disclaimer').textContent = t('disclaimer');
+  document.getElementById('ob-how-title').textContent  = t('howTitle');
+  document.getElementById('ob-h1').textContent = t('h1'); document.getElementById('ob-b1').textContent = t('b1');
+  document.getElementById('ob-h2').textContent = t('h2'); document.getElementById('ob-b2').textContent = t('b2');
+  document.getElementById('ob-h3').textContent = t('h3'); document.getElementById('ob-b3').textContent = t('b3');
+  document.getElementById('ob-back').textContent  = t('back');
+  document.getElementById('ob-start').textContent = t('start');
+  document.getElementById('ob-next').textContent  = t('next');
+  // Panel labels
+  document.querySelector('.panel-label')?.['textContent'] && null;
+  document.querySelectorAll('.panel-label')[0] && (document.querySelectorAll('.panel-label')[0].textContent = t('myDiags'));
+  document.querySelectorAll('.panel-label')[1] && (document.querySelectorAll('.panel-label')[1].textContent = t('addSymptom'));
+  // Inputs
+  const inp = document.getElementById('inp-name'); if(inp) inp.placeholder = t('namePlaceholder');
+  const ctx2 = document.getElementById('inp-context'); if(ctx2) ctx2.placeholder = t('whenPlaceholder');
+  const rpCtx = document.getElementById('rp-context'); if(rpCtx) rpCtx.placeholder = t('whenPlaceholder');
+  const rpN = document.getElementById('rp-notes'); if(rpN) rpN.placeholder = t('notesPlaceholder');
+  // Buttons
+  const btnAdd = document.querySelector('.btn-add'); if(btnAdd) btnAdd.textContent = t('btnAdd');
+  // Legend
+  document.getElementById('leg-title').textContent = t('legTitle');
+  document.getElementById('leg-hub').textContent   = t('legHub');
+  document.getElementById('leg-sym').textContent   = t('legSym');
+  document.getElementById('leg-multi').textContent = t('legMulti');
+  document.getElementById('leg-float').textContent = t('legFloat');
+  document.getElementById('leg-thin').textContent  = t('legThin');
+  document.getElementById('leg-thick').textContent = t('legThick');
+  document.getElementById('leg-dash').textContent  = t('legDash');
+  document.getElementById('legend-toggle').textContent = t('legBtn');
+  // Topbar
+  document.getElementById('map-name').textContent = t('topHint');
+  // Review panel
+  document.querySelector('#review-panel h3') && (document.querySelector('#review-panel h3').textContent = t('suggestedTitle'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════════════════
+let obCurrentStep = 1;
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('lang-en').classList.toggle('selected', l==='en');
+  document.getElementById('lang-es').classList.toggle('selected', l==='es');
+  document.getElementById('ob-next').disabled = false;
+  applyLang();
+}
+
+function obNext() {
+  obCurrentStep = 2;
+  document.getElementById('ob-step-1').classList.remove('active');
+  document.getElementById('ob-step-2').classList.add('active');
+}
+
+function obBack() {
+  obCurrentStep = 1;
+  document.getElementById('ob-step-2').classList.remove('active');
+  document.getElementById('ob-step-1').classList.add('active');
+}
+
+function startApp() {
+  state.lang = lang;
+  saveState();
+  const ob = document.getElementById('onboarding');
+  ob.classList.add('hide');
+  setTimeout(() => ob.style.display='none', 400);
+  document.getElementById('legend').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEGEND HOVER — illuminate matching elements on canvas
+// ═══════════════════════════════════════════════════════════
+function legendHover(type) {
+  legendHighlight = type;
+  draw();
+}
+function legendHoverEnd() {
+  legendHighlight = null;
+  draw();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEGEND TOGGLE
+// ═══════════════════════════════════════════════════════════
+function toggleLegend() {
+  const leg = document.getElementById('legend');
+  const btn = document.getElementById('legend-toggle');
+  const hidden = leg.classList.toggle('hidden');
+  btn.style.display = hidden ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('resize', resize);
+resize();
+renderDiagList();
+renderNodeList();
+applyLang();
+
+// Returning user — skip onboarding
+if (state.nodes.length > 0 || state.selectedDiags.length > 0) {
+  const ob = document.getElementById('onboarding');
+  ob.style.display = 'none';
+  document.getElementById('legend').classList.remove('hidden');
+} else {
+  // First time — hide legend until app starts
+  document.getElementById('legend').classList.add('hidden');
+  // Pre-select lang if saved
+  if (state.lang) { setLang(state.lang); }
+}
+
+if (state.nodes.length > 0) {
+  state.nodes.forEach(n => { if (!n._placed) n._placed = false; });
+  initLayout();
+  draw();
+}
+</script>
+</body>
+</html>
