@@ -1995,9 +1995,6 @@ function toggleContextHint(val) {
 async function addWithAIAnalysis() {
   const name = document.getElementById('inp-name').value.trim();
   if (!name) { showToast('Escribe el nombre del síntoma primero'); return; }
-  const apiKey = localStorage.getItem('sm_apikey');
-  if (!apiKey) { openApiModal(); return; }
-
   // First add as floating node
   const nodeId = 'n'+(state.idCounter++);
   const context = document.getElementById('inp-context').value.trim();
@@ -2048,13 +2045,10 @@ Responde SOLO con JSON válido, sin texto extra:
 - Diagnósticos disponibles: ${state.selectedDiags.join(', ')}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
@@ -2126,8 +2120,6 @@ function renderNodeList() {
 // AI GENERATION
 // ═══════════════════════════════════════════════════════════
 async function generateWithAI() {
-  const apiKey = localStorage.getItem('sm_apikey');
-  if (!apiKey) { openApiModal(); return; }
   if (state.selectedDiags.length === 0) { showToast('Selecciona al menos un diagnóstico'); return; }
 
   showLoading('Consultando IA...');
@@ -2181,13 +2173,10 @@ Usa lenguaje de primera persona, no patologizante.
 Enfócate en experiencias reales: emocionales, cognitivas, corporales, relacionales.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
