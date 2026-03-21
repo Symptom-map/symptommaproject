@@ -876,7 +876,6 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
   <div class="logo">Symptom<span class="logo-dot">Map</span></div>
   <span class="topbar-hint" id="map-name">click · mover &nbsp;·&nbsp; doble click · abrir diario</span>
   <div class="topbar-sep"></div>
-  <button class="btn-icon" title="Configurar API key" onclick="openApiModal()">🔑</button>
   <button class="btn-icon" title="Exportar imagen" onclick="exportMap()">↗</button>
 </div>
 
@@ -2020,13 +2019,11 @@ Responde SOLO con JSON válido, sin texto extra:
 - Diagnósticos disponibles: ${state.selectedDiags.join(', ')}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
@@ -2098,8 +2095,6 @@ function renderNodeList() {
 // AI GENERATION
 // ═══════════════════════════════════════════════════════════
 async function generateWithAI() {
-  const apiKey = localStorage.getItem('sm_apikey');
-  if (!apiKey) { openApiModal(); return; }
   if (state.selectedDiags.length === 0) { showToast('Selecciona al menos un diagnóstico'); return; }
 
   showLoading('Consultando IA...');
@@ -2153,13 +2148,11 @@ Usa lenguaje de primera persona, no patologizante.
 Enfócate en experiencias reales: emocionales, cognitivas, corporales, relacionales.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
