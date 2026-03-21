@@ -1189,7 +1189,7 @@ function resize() {
 function initLayout() {
   const hubs = state.nodes.filter(n => n.hub);
   if (hubs.length === 0) return;
-  const spacing = Math.min(W * 0.2, 180);
+  const spacing = Math.max(130, Math.min(W * 0.18, 200));
   const totalW  = spacing * (hubs.length - 1);
   let startX = offX - totalW / 2;
   const y = offY - H * 0.08;
@@ -1605,9 +1605,9 @@ let dragMoved = false; // track if mouse moved during drag
 
 canvas.addEventListener('mousedown', e => {
   const n = nodeAt(e.offsetX, e.offsetY);
-  if (n && !n.hub) {
-    if (e.ctrlKey || e.metaKey) {
-      // Ctrl+click: toggle multi-selection
+  if (n) {
+    if (!n.hub && (e.ctrlKey || e.metaKey)) {
+      // Ctrl+click on symptom: toggle multi-selection
       if (multiSelectedIds.has(n.id)) multiSelectedIds.delete(n.id);
       else multiSelectedIds.add(n.id);
       selectedId = null;
@@ -1619,7 +1619,7 @@ canvas.addEventListener('mousedown', e => {
       lastMx = e.offsetX; lastMy = e.offsetY;
       return;
     }
-    // Normal click: clear multi-selection
+    // Normal click — always draggable, clear multi-selection
     multiSelectedIds.clear();
     dragNodeId = n.id;
     selectedId = n.id;
