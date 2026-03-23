@@ -3357,41 +3357,109 @@ let lang = state.lang || 'en';
 function t(key) { return STRINGS[lang]?.[key] || STRINGS.en[key] || key; }
 
 function applyLang() {
+  const es = lang === 'es';
+
   // Onboarding
-  document.getElementById('ob-tagline').textContent   = t('tagline');
-  document.getElementById('ob-disclaimer').textContent = t('disclaimer');
-  document.getElementById('ob-how-title').textContent  = t('howTitle');
-  document.getElementById('ob-h1').textContent = t('h1'); document.getElementById('ob-b1').textContent = t('b1');
-  document.getElementById('ob-h2').textContent = t('h2'); document.getElementById('ob-b2').textContent = t('b2');
-  document.getElementById('ob-h3').textContent = t('h3'); document.getElementById('ob-b3').textContent = t('b3');
-  document.getElementById('ob-back').textContent  = t('back');
-  document.getElementById('ob-start').textContent = t('start');
-  document.getElementById('ob-next').textContent  = t('next');
-  // Panel labels
-  document.querySelector('.panel-label')?.['textContent'] && null;
-  document.querySelectorAll('.panel-label')[0] && (document.querySelectorAll('.panel-label')[0].textContent = t('myDiags'));
-  document.querySelectorAll('.panel-label')[1] && (document.querySelectorAll('.panel-label')[1].textContent = t('addSymptom'));
-  // Inputs
-  const inp = document.getElementById('inp-name'); if(inp) inp.placeholder = t('namePlaceholder');
-  const ctx2 = document.getElementById('inp-context'); if(ctx2) ctx2.placeholder = t('whenPlaceholder');
-  const rpCtx = document.getElementById('rp-context'); if(rpCtx) rpCtx.placeholder = t('whenPlaceholder');
-  const rpN = document.getElementById('rp-notes'); if(rpN) rpN.placeholder = t('notesPlaceholder');
-  // Buttons
-  const btnAdd = document.querySelector('.btn-add'); if(btnAdd) btnAdd.textContent = t('btnAdd');
-  // Legend
-  document.getElementById('leg-title').textContent = t('legTitle');
-  document.getElementById('leg-hub').textContent   = t('legHub');
-  document.getElementById('leg-sym').textContent   = t('legSym');
-  document.getElementById('leg-multi').textContent = t('legMulti');
-  document.getElementById('leg-float').textContent = t('legFloat');
-  document.getElementById('leg-thin').textContent  = t('legThin');
-  document.getElementById('leg-thick').textContent = t('legThick');
-  document.getElementById('leg-dash').textContent  = t('legDash');
-  document.getElementById('legend-toggle').textContent = t('legBtn');
-  // Topbar
-  document.getElementById('map-name').textContent = t('topHint');
+  const obTagline = document.getElementById('ob-tagline');
+  if (obTagline) obTagline.textContent = t('tagline');
+  const obDisc = document.getElementById('ob-disclaimer');
+  if (obDisc) obDisc.textContent = t('disclaimer');
+  const obHowTitle = document.getElementById('ob-how-title');
+  if (obHowTitle) obHowTitle.textContent = t('howTitle');
+  ['h1','h2','h3','b1','b2','b3'].forEach(k => {
+    const el = document.getElementById('ob-'+k); if(el) el.textContent = t(k);
+  });
+  ['ob-back','ob-back2','ob-start','ob-next','ob-next2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (id === 'ob-back' || id === 'ob-back2') el.textContent = es ? '← Volver' : '← Back';
+      if (id === 'ob-start') el.textContent = es ? 'Empezar →' : 'Start →';
+      if (id === 'ob-next' || id === 'ob-next2') el.textContent = '→';
+    }
+  });
+
+  // Accordion headers
+  const diagLabel = document.getElementById('acc-diags-label');
+  if (diagLabel) diagLabel.textContent = es ? 'Mis diagnósticos' : 'My diagnoses';
+  const addLabel = document.getElementById('acc-add-label');
+  if (addLabel) addLabel.textContent = es ? 'Agregar síntoma' : 'Add symptom';
+  const listLabel = document.getElementById('acc-list-label');
+  if (listLabel) listLabel.textContent = es ? 'Síntomas' : 'Symptoms';
+
+  // Generate button
+  const genLabel = document.getElementById('btn-gen-label');
+  if (genLabel) genLabel.textContent = es ? 'Sugerir síntomas' : 'Suggest symptoms';
+
+  // Add symptom form
+  const inp = document.getElementById('inp-name');
+  if (inp) inp.placeholder = es ? 'ej. náuseas, insomnio...' : 'e.g. nausea, insomnia...';
+  const ctxField = document.getElementById('inp-context');
+  if (ctxField) ctxField.placeholder = es ? 'ej. cuando hay mucha gente, después de comer...' : 'e.g. in crowded places, after eating...';
+
+  // Form labels inside accordion
+  document.querySelectorAll('.form-label').forEach(el => {
+    if (el.id === 'add-when-label') el.textContent = es ? '¿Cuándo / cómo aparece? (opcional)' : 'When / how does it appear? (optional)';
+    if (el.id === 'add-cond-label') el.textContent = es ? 'Condición(es) — opcional' : 'Condition(s) — optional';
+  });
+
+  // Add buttons
+  document.querySelectorAll('.btn-add').forEach((btn, i) => {
+    if (btn.onclick?.toString().includes('addNodeManual')) {
+      btn.textContent = es ? '+ Agregar' : '+ Add';
+    }
+  });
+  const analyzeBtn = document.querySelector('[onclick="addWithAIAnalysis()"]');
+  if (analyzeBtn) analyzeBtn.textContent = es ? '✦ Analizar origen' : '✦ Analyze origin';
+
+  // Right panel
+  const rpCtx = document.getElementById('rp-context');
+  if (rpCtx) rpCtx.placeholder = es ? 'ej. cuando hay mucha gente, al despertar...' : 'e.g. in crowded spaces, when waking up...';
+  const rpNotes = document.getElementById('rp-notes');
+  if (rpNotes) rpNotes.placeholder = es ? '¿Qué lo detona? ¿Cómo se siente...' : 'What triggers it? How does it feel...';
+  const rpWhenLabel = document.querySelector('.rp-section-label');
+  // Update all rp section labels
+  document.querySelectorAll('.rp-section-label').forEach((el, i) => {
+    if (i === 0) el.textContent = es ? '¿Cuándo / cómo aparece?' : 'When / how does it appear?';
+    if (i === 1) el.textContent = es ? 'Notas' : 'Notes';
+  });
+  const btnSave = document.querySelector('.btn-save');
+  if (btnSave) btnSave.textContent = es ? 'Guardar' : 'Save';
+  const btnDel = document.querySelector('.btn-del');
+  if (btnDel) btnDel.textContent = es ? 'Eliminar' : 'Delete';
+  const rpPromote = document.querySelector('#rp-promote button');
+  if (rpPromote) rpPromote.textContent = es ? '↑ Mover al mapa principal' : '↑ Move to main map';
+
+  // Therapist notice
+  const tn = document.querySelector('.therapist-notice strong');
+  if (tn) tn.textContent = es ? '💬 Para explorar con tu terapeuta' : '💬 Worth exploring with your therapist';
+  const tnP = document.querySelector('.therapist-notice');
+  if (tnP) {
+    const strong = tnP.querySelector('strong');
+    if (strong) {
+      tnP.innerHTML = `<strong>${es ? '💬 Para explorar con tu terapeuta' : '💬 Worth exploring with your therapist'}</strong>${
+        es ? 'No encontramos una conexión clara de este síntoma con tus diagnósticos. Puede ser algo importante para explorar con tu médico o terapeuta.'
+           : "We couldn't find a clear connection between this symptom and your diagnoses. It may be worth exploring with your doctor or therapist."
+      }`;
+    }
+  }
+
   // Review panel
-  document.querySelector('#review-panel h3') && (document.querySelector('#review-panel h3').textContent = t('suggestedTitle'));
+  const reviewH3 = document.querySelector('#review-panel h3');
+  if (reviewH3) reviewH3.textContent = es ? 'Síntomas sugeridos' : 'Suggested symptoms';
+  const acceptAllBtn = document.querySelector('.review-footer .btn-primary');
+  if (acceptAllBtn) acceptAllBtn.textContent = es ? 'Aceptar todos' : 'Accept all';
+  const closeReviewBtn = document.querySelector('.review-footer .btn-secondary');
+  if (closeReviewBtn) closeReviewBtn.textContent = es ? 'Cerrar' : 'Close';
+
+  // Legend
+  const legIds = ['leg-title','leg-hub','leg-sym','leg-multi','leg-float','leg-thin','leg-thick','leg-dash'];
+  const legKeys = ['legTitle','legHub','legSym','legMulti','legFloat','legThin','legThick','legDash'];
+  legIds.forEach((id,i) => { const el=document.getElementById(id); if(el) el.textContent=t(legKeys[i]); });
+  const legBtn = document.getElementById('legend-toggle');
+  if (legBtn) legBtn.textContent = es ? '? leyenda' : '? legend';
+
+  // HTML lang attribute
+  document.documentElement.lang = lang;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3454,8 +3522,11 @@ function startApp() {
   state.lang = lang;
   state.username = username;
   saveState();
-  // Show name in topbar
-  if (username) document.getElementById('map-name').textContent = username + "'s map";
+  applyLang(); // apply full translation now that lang is confirmed
+  if (username) {
+    const mapLabel = lang === 'es' ? `mapa de ${username}` : `${username}'s map`;
+    document.getElementById('map-name').textContent = mapLabel;
+  }
   const ob = document.getElementById('onboarding');
   ob.classList.add('hide');
   setTimeout(() => ob.style.display='none', 400);
