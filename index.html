@@ -1757,15 +1757,15 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
             <textarea id="inp-context" placeholder="ej. cuando hay mucha gente, después de comer, al despertar..."></textarea>
           </div>
           <div class="form-row">
-            <span class="form-label">Condición(es) — opcional</span>
+            <span class="form-label" id="add-cond-label">Condition(s) — optional</span>
             <div class="cond-checks" id="add-checks"></div>
           </div>
           <div class="form-row" style="display:flex;gap:6px">
-            <button class="btn-add" style="flex:1" onclick="addNodeManual()">+ Agregar</button>
-            <button class="btn-add" style="flex:1;border-color:var(--ai-glow);color:var(--ai-glow)" onclick="addWithAIAnalysis()">✦ Analizar origen</button>
+            <button class="btn-add" style="flex:1" onclick="addNodeManual()" id="btn-add-manual">+ Add</button>
+            <button class="btn-add" style="flex:1;border-color:var(--ai-glow);color:var(--ai-glow)" onclick="addWithAIAnalysis()" id="btn-analyze">✦ Analyze origin</button>
           </div>
-          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--light);margin-top:4px;line-height:1.5" id="add-hint">
-            Sin condición → nodo flotante. "Analizar origen" → la IA busca qué síntomas lo generan.
+          <div style="font-size:0.62rem;color:var(--light);margin-top:4px;line-height:1.5" id="add-hint">
+            No condition → floating node. "Analyze origin" → AI finds what generates it.
           </div>
         </div>
       </div>
@@ -1801,24 +1801,24 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
         <div class="rp-tags" id="rp-tags"></div>
         <div id="rp-ai-note"></div>
         <div id="rp-therapist-notice" style="display:none" class="therapist-notice">
-          <strong>💬 Para explorar con tu terapeuta</strong>
-          No encontramos una conexión clara de este síntoma con tus diagnósticos. Puede ser algo importante para explorar con tu médico o terapeuta.
+          <strong id="rp-therapist-title">💬 Worth exploring with your therapist</strong>
+          <span id="rp-therapist-body">We couldn't find a clear connection between this symptom and your diagnoses. It may be worth exploring with your doctor or therapist.</span>
         </div>
         <div>
-          <div class="rp-section-label">¿Cuándo / cómo aparece?</div>
-          <textarea class="rp-note-area" id="rp-context" placeholder="ej. cuando hay mucha gente, al despertar, con estrés..." style="height:64px;margin-bottom:8px"></textarea>
+          <div class="rp-section-label" id="rp-when-label">When / how does it appear?</div>
+          <textarea class="rp-note-area" id="rp-context" placeholder="e.g. in crowded spaces, when waking up..." style="height:64px;margin-bottom:8px"></textarea>
         </div>
         <div>
-          <div class="rp-section-label">Notas / Diario</div>
-          <textarea class="rp-note-area" id="rp-notes" placeholder="¿Qué lo detona? ¿Cómo se siente en el cuerpo..."></textarea>
+          <div class="rp-section-label" id="rp-notes-label">Notes</div>
+          <textarea class="rp-note-area" id="rp-notes" placeholder="What triggers it? How does it feel..."></textarea>
         </div>
         <div class="rp-actions">
-          <button class="btn-save" onclick="saveNote()">Guardar nota</button>
-          <button class="btn-del" onclick="deleteSelected()">Eliminar</button>
+          <button class="btn-save" onclick="saveNote()" id="btn-save-note">Save</button>
+          <button class="btn-del" onclick="deleteSelected()" id="btn-delete-node">Delete</button>
         </div>
         <div id="rp-promote" style="display:none;margin-top:6px">
-          <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()">
-            ↑ Mover al mapa principal
+          <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()" id="btn-promote">
+            ↑ Move to main map
           </button>
         </div>
       </div>
@@ -1826,11 +1826,11 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
       <!-- Multi-selection view -->
       <div id="rp-multi" style="display:none">
         <div class="multi-panel">
-          <div class="multi-panel-title" id="mp-title">Analizando intersección</div>
+          <div class="multi-panel-title" id="mp-title">Analyzing intersection</div>
           <div class="multi-panel-names" id="mp-names"></div>
           <button class="btn-generate" id="mp-btn" onclick="analyzeMulti()" style="margin-top:4px">
-            <span class="ai-badge">IA</span>
-            <span id="mp-btn-label">¿Qué tienen en común?</span>
+            <span class="ai-badge">AI</span>
+            <span id="mp-btn-label">What do they share?</span>
           </button>
           <div class="multi-analysis" id="mp-result" style="display:none"></div>
         </div>
@@ -3458,8 +3458,46 @@ function applyLang() {
   if (genLabel) genLabel.textContent = es ? 'Sugerir síntomas' : 'Suggest symptoms';
 
   // Add symptom form
-  const inp = document.getElementById('inp-name');
-  if (inp) inp.placeholder = es ? 'ej. náuseas, insomnio...' : 'e.g. nausea, insomnia...';
+  const condLabel = document.getElementById('add-cond-label');
+  if (condLabel) condLabel.textContent = es ? 'Condición(es) — opcional' : 'Condition(s) — optional';
+  const btnAddManual = document.getElementById('btn-add-manual');
+  if (btnAddManual) btnAddManual.textContent = es ? '+ Agregar' : '+ Add';
+  const btnAnalyze = document.getElementById('btn-analyze');
+  if (btnAnalyze) btnAnalyze.textContent = es ? '✦ Analizar origen' : '✦ Analyze origin';
+  const addHint = document.getElementById('add-hint');
+  if (addHint) addHint.textContent = es
+    ? 'Sin condición → nodo flotante. "Analizar origen" → la IA busca qué síntomas lo generan.'
+    : 'No condition → floating node. "Analyze origin" → AI finds what generates it.';
+
+  // Right panel labels
+  const rpWhen = document.getElementById('rp-when-label');
+  if (rpWhen) rpWhen.textContent = es ? '¿Cuándo / cómo aparece?' : 'When / how does it appear?';
+  const rpNotesLbl = document.getElementById('rp-notes-label');
+  if (rpNotesLbl) rpNotesLbl.textContent = es ? 'Notas' : 'Notes';
+  const btnSaveNote = document.getElementById('btn-save-note');
+  if (btnSaveNote) btnSaveNote.textContent = es ? 'Guardar' : 'Save';
+  const btnDeleteNode = document.getElementById('btn-delete-node');
+  if (btnDeleteNode) btnDeleteNode.textContent = es ? 'Eliminar' : 'Delete';
+  const btnPromote = document.getElementById('btn-promote');
+  if (btnPromote) btnPromote.textContent = es ? '↑ Mover al mapa principal' : '↑ Move to main map';
+
+  // Therapist notice
+  const tnTitle = document.getElementById('rp-therapist-title');
+  if (tnTitle) tnTitle.textContent = es ? '💬 Para explorar con tu terapeuta' : '💬 Worth exploring with your therapist';
+  const tnBody = document.getElementById('rp-therapist-body');
+  if (tnBody) tnBody.textContent = es
+    ? 'No encontramos una conexión clara de este síntoma con tus diagnósticos. Puede ser algo importante para explorar con tu médico o terapeuta.'
+    : "We couldn't find a clear connection between this symptom and your diagnoses. It may be worth exploring with your doctor or therapist.";
+
+  // Multi panel
+  const mpBtn = document.getElementById('mp-btn-label');
+  if (mpBtn) mpBtn.textContent = es ? '¿Qué tienen en común?' : 'What do they share?';
+
+  // Add symptom form context field label
+  const ctxLabel = document.querySelector('#context-field .form-label');
+  if (ctxLabel) ctxLabel.textContent = es ? '¿Cuándo / cómo aparece? (opcional)' : 'When / how does it appear? (optional)';
+  const inpName = document.getElementById('inp-name');
+  if (inpName) inpName.placeholder = es ? 'ej. náuseas, insomnio...' : 'e.g. nausea, insomnia...';
   const ctxField = document.getElementById('inp-context');
   if (ctxField) ctxField.placeholder = es ? 'ej. cuando hay mucha gente, después de comer...' : 'e.g. in crowded places, after eating...';
 
