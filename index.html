@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SymptomMap</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  --bg:       #f7f4ef;
-  --surface:  #eeeae2;
-  --surface2: #e5e0d5;
-  --border:   #ccc8be;
-  --ink:      #1c1a16;
+  --bg:       #f5f2ec;
+  --surface:  rgba(255,252,248,0.72);
+  --surface2: rgba(235,230,220,0.8);
+  --border:   rgba(180,170,155,0.35);
+  --border-solid: #ccc8be;
+  --ink:      #1a1814;
   --muted:    #7a7060;
   --light:    #aaa090;
   --tda:   #c0622a;
@@ -23,7 +24,769 @@
   --bi:    #d4953a;
   --anx:   #6aaa4a;
   --ai-glow: #1aabb0;
+  --glass: rgba(255,252,248,0.65);
+  --glass-border: rgba(255,255,255,0.5);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-btn: 20px;
 }
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  background-image: radial-gradient(ellipse at 20% 20%, rgba(192,98,42,0.06) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 80%, rgba(61,122,184,0.06) 0%, transparent 50%);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar {
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  gap: 16px;
+  flex-shrink: 0;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.logo-dot { color: var(--ai-glow); }
+.topbar-sep { flex: 1; }
+
+.btn-icon {
+  width: 34px; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: all 0.15s;
+  backdrop-filter: blur(8px);
+}
+.btn-icon:hover { background: var(--surface2); border-color: var(--ink); color: var(--ink); }
+
+/* ─── LAYOUT ─────────────────────────────────────────────── */
+.app { display: flex; flex: 1; overflow: hidden; }
+
+/* ─── LEFT PANEL ─────────────────────────────────────────── */
+.left-panel {
+  width: 290px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: width 0.25s ease;
+}
+
+.left-panel.collapsed { width: 0; border: none; }
+
+.panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 290px;
+}
+
+.panel-section {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--light);
+  margin-bottom: 10px;
+}
+
+/* Diagnosis checkboxes */
+.diag-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+
+.diag-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all 0.12s;
+}
+.diag-item:hover { background: var(--surface2); }
+.diag-item.active { border-color: var(--border); background: rgba(255,252,248,0.8); }
+
+.diag-swatch {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+.diag-item.active .diag-swatch { opacity: 1; }
+
+.diag-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+.diag-item.active .diag-name { color: var(--ink); font-weight: 500; }
+
+/* Generate button */
+.btn-generate {
+  width: 100%;
+  padding: 10px;
+  background: var(--ink);
+  color: #f5f2ec;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.01em;
+}
+.btn-generate:hover { opacity: 0.85; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-generate:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.ai-badge {
+  background: var(--ai-glow);
+  color: white;
+  font-size: 0.58rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Add symptom form */
+.form-row { margin-bottom: 8px; }
+.form-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: block;
+}
+
+input[type="text"], input[type="number"], textarea {
+  width: 100%;
+  background: rgba(255,252,248,0.8);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 8px 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+  border-color: var(--ai-glow);
+  box-shadow: 0 0 0 3px rgba(26,171,176,0.1);
+}
+textarea { resize: none; height: 70px; line-height: 1.5; }
+
+.cond-checks { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.cond-check { display: flex; align-items: center; cursor: pointer; }
+.cond-check input { display: none; }
+.cond-pill {
+  padding: 3px 10px;
+  border-radius: var(--radius-btn);
+  font-size: 0.65rem;
+  font-weight: 500;
+  border: 1px solid var(--border-solid);
+  color: var(--muted);
+  transition: all 0.12s;
+  user-select: none;
+}
+.cond-check input:checked + .cond-pill { color: white; border-color: transparent; }
+.cond-check input:checked + .p-tda   { background: var(--tda); }
+.cond-check input:checked + .p-tlp   { background: var(--tlp); }
+.cond-check input:checked + .p-an    { background: var(--an);  }
+.cond-check input:checked + .p-aut   { background: var(--aut); }
+.cond-check input:checked + .p-cptsd { background: var(--cptsd); }
+.cond-check input:checked + .p-bi    { background: var(--bi);  }
+.cond-check input:checked + .p-anx   { background: var(--anx); }
+
+.btn-add {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-add:hover { border-color: var(--ink); color: var(--ink); background: rgba(255,252,248,0.6); }
+
+/* Node list */
+.node-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+.node-scroll::-webkit-scrollbar { width: 3px; }
+.node-scroll::-webkit-scrollbar-thumb { background: var(--border-solid); border-radius: 2px; }
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.1s;
+  margin-bottom: 3px;
+}
+.node-row:hover { background: var(--surface2); border-color: var(--border); }
+.node-row.selected { background: rgba(255,252,248,0.9); border-color: var(--ink); }
+.node-row.multi-selected { background: rgba(61,122,184,0.08); border-color: #3d7ab8; }
+
+.node-row-bar { width: 3px; min-height: 18px; border-radius: 2px; flex-shrink: 0; align-self: stretch; }
+.node-row-name { font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 400; flex: 1; line-height: 1.4; }
+.node-row-dots { display: flex; gap: 2px; flex-shrink: 0; align-items: center; }
+.dot-xs { width: 5px; height: 5px; border-radius: 50%; }
+.ai-dot { font-size: 0.55rem; color: var(--ai-glow); }
+.node-row-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cc4444;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+.node-row:hover .node-row-delete { opacity: 1; }
+
+/* ─── CANVAS ──────────────────────────────────────────────── */
+#canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+canvas { position: absolute; top: 0; left: 0; cursor: default; }
+
+/* ─── RIGHT PANEL ─────────────────────────────────────────── */
+.right-panel {
+  width: 0;
+  border-left: 1px solid transparent;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.22s ease;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.right-panel.open {
+  width: 290px;
+  border-left-color: var(--border);
+}
+
+.rp-inner {
+  width: 290px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  overflow-y: auto;
+}
+.rp-inner::-webkit-scrollbar { width: 3px; }
+.rp-inner::-webkit-scrollbar-thumb { background: var(--border-solid); }
+
+.rp-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(200,195,185,0.4);
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.rp-close:hover { background: rgba(200,195,185,0.7); color: var(--ink); }
+
+.rp-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding-right: 28px;
+}
+
+.rp-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.rp-tag {
+  padding: 3px 10px;
+  border-radius: var(--radius-btn);
+  font-size: 0.62rem;
+  font-weight: 500;
+  border: 1.5px solid;
+}
+
+.rp-ai-note {
+  padding: 10px 12px;
+  background: rgba(26,171,176,0.07);
+  border: 1px solid rgba(26,171,176,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.rp-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--light);
+  margin-bottom: 5px;
+}
+
+.rp-note-area {
+  width: 100%;
+  height: 110px;
+  background: rgba(255,252,248,0.7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ink);
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rp-note-area:focus { border-color: var(--ai-glow); box-shadow: 0 0 0 3px rgba(26,171,176,0.1); }
+.rp-note-area::placeholder { color: var(--light); }
+
+.rp-actions { display: flex; gap: 8px; }
+.btn-save {
+  flex: 1; padding: 9px;
+  background: var(--ink); color: #f5f2ec;
+  border: none; border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-save:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.btn-del {
+  padding: 9px 14px;
+  background: transparent;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted);
+  border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-del:hover { border-color: #cc4444; color: #cc4444; background: rgba(204,68,68,0.05); }
+
+/* ─── TOOLTIP ─────────────────────────────────────────────── */
+#tooltip {
+  position: fixed;
+  background: rgba(26,24,20,0.88);
+  backdrop-filter: blur(8px);
+  color: #f5f2ec;
+  padding: 6px 12px;
+  border-radius: var(--radius-btn);
+  font-size: 0.72rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 100;
+  max-width: 240px;
+  white-space: normal;
+}
+#tooltip.show { opacity: 1; }
+
+/* ─── LOADING ────────────────────────────────────────────── */
+#loading {
+  position: fixed; inset: 0;
+  background: rgba(245,242,236,0.75);
+  backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+#loading.show { opacity: 1; pointer-events: all; }
+.spinner {
+  width: 30px; height: 30px;
+  border: 2.5px solid var(--border-solid);
+  border-top-color: var(--ai-glow);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading p { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
+/* ─── MODALS (glass) ─────────────────────────────────────── */
+#apimodal, #diagmodal, #custommodal {
+  position: fixed; inset: 0;
+  background: rgba(26,24,20,0.35);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+#apimodal.show, #diagmodal.show, #custommodal.show { opacity: 1; pointer-events: all; }
+
+.modal-box, .diagmodal-box, .custommodal-box {
+  background: rgba(250,248,244,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-box {
+  padding: 28px; width: 380px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.modal-box h2 { font-size: 1.1rem; font-weight: 700; }
+.modal-box p  { font-size: 0.84rem; color: var(--muted); line-height: 1.6; }
+
+.modal-actions { display: flex; gap: 8px; }
+.btn-primary {
+  flex: 1; padding: 10px;
+  background: var(--ink); color: #f5f2ec;
+  border: none; border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-secondary {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted);
+  border-radius: var(--radius-btn);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ─── DIAG PROFILE MODAL ─────────────────────────────────── */
+.diagmodal-box {
+  padding: 0; width: 420px;
+  max-height: 88vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.diagmodal-box::-webkit-scrollbar { width: 3px; }
+.diagmodal-box::-webkit-scrollbar-thumb { background: var(--border-solid); }
+
+.diagmodal-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: rgba(250,248,244,0.95);
+  backdrop-filter: blur(12px);
+  z-index: 1; border-radius: var(--radius) var(--radius) 0 0;
+}
+.diagmodal-header h2 { font-size: 1.05rem; font-weight: 700; }
+.diagmodal-header p  { font-size: 0.8rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+.diagmodal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.profile-field { display: flex; flex-direction: column; gap: 5px; }
+.profile-field label { font-size: 0.72rem; font-weight: 600; color: var(--muted); }
+.profile-field input[type="text"],
+.profile-field input[type="number"],
+.profile-field textarea { font-size: 0.82rem; }
+.profile-field textarea { height: 64px; resize: none; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 5px 12px; border-radius: var(--radius-btn);
+  font-size: 0.68rem; font-weight: 500;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted); cursor: pointer;
+  transition: all 0.12s; user-select: none;
+}
+.chip.on { color: white; border-color: transparent; }
+
+.diagmodal-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; position: sticky; bottom: 0;
+  background: rgba(250,248,244,0.95); backdrop-filter: blur(12px);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* ─── ACCORDION ──────────────────────────────────────────── */
+.accordion-section { border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.accordion-section:last-child { border-bottom: none; }
+.accordion-header {
+  width: 100%; padding: 12px 18px;
+  background: none; border: none;
+  display: flex; align-items: center; gap: 7px;
+  cursor: pointer;
+  font-size: 0.65rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); text-align: left; transition: color 0.12s;
+}
+.accordion-header:hover { color: var(--ink); }
+.accordion-header.open  { color: var(--ink); }
+.acc-count {
+  font-size: 0.6rem; background: var(--surface2);
+  border-radius: 10px; padding: 1px 7px; color: var(--muted);
+}
+.acc-arrow { margin-left: auto; font-size: 0.7rem; transition: transform 0.2s; color: var(--light); }
+.accordion-header:not(.open) .acc-arrow { transform: rotate(-90deg); }
+.accordion-body { padding: 0 18px 16px; }
+
+/* context field */
+.context-field { overflow: hidden; max-height: 0; transition: max-height 0.2s ease; }
+.context-field.open { max-height: 120px; }
+.context-field textarea { height: 56px; font-size: 0.8rem; resize: none; margin-top: 4px; }
+
+/* ─── LEGEND ─────────────────────────────────────────────── */
+#legend {
+  position: absolute; bottom: 20px; left: 20px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 14px 28px 14px 16px;
+  font-size: 0.66rem; color: var(--muted);
+  z-index: 10; display: flex; flex-direction: column; gap: 7px;
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s;
+}
+#legend.hidden { opacity: 0; pointer-events: none; }
+.legend-title { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--light); margin-bottom: 2px; }
+.legend-row { display: flex; align-items: center; gap: 9px; cursor: default; border-radius: 5px; padding: 2px 4px; margin: 0 -4px; transition: background 0.12s; }
+.legend-row:hover { background: var(--surface2); }
+.legend-row:hover span { color: var(--ink); }
+.legend-hub { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; }
+.legend-sym { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.legend-sym.multi { background: transparent; border: 2px solid var(--muted); width: 10px; height: 10px; }
+.legend-sym.float { background: transparent; border: 2px dashed var(--muted); width: 10px; height: 10px; }
+.legend-line { width: 22px; height: 1px; background: var(--muted); flex-shrink: 0; opacity: 0.4; }
+.legend-line.thick { height: 3px; opacity: 0.9; }
+.legend-line.dashed { background: repeating-linear-gradient(90deg,#1c1a1688 0,#1c1a1688 3px,transparent 3px,transparent 6px); }
+.legend-close { position: absolute; top: 8px; right: 10px; background: none; border: none; cursor: pointer; color: var(--light); font-size: 0.8rem; }
+#legend-toggle {
+  position: absolute; bottom: 20px; left: 20px; z-index: 10;
+  background: var(--glass); backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn); padding: 6px 14px;
+  font-size: 0.65rem; font-weight: 500;
+  color: var(--muted); cursor: pointer; display: none;
+  transition: all 0.12s;
+}
+#legend-toggle:hover { color: var(--ink); border-color: var(--ink); }
+
+/* ─── TOAST ───────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: rgba(26,24,20,0.88);
+  backdrop-filter: blur(12px);
+  color: #f5f2ec;
+  padding: 9px 20px;
+  border-radius: var(--radius-btn);
+  font-size: 0.78rem; font-weight: 500;
+  opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 400;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── REVIEW PANEL ───────────────────────────────────────── */
+#review-panel {
+  position: fixed; top: 56px; right: 0; bottom: 0; width: 340px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  z-index: 150; display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform 0.25s ease;
+  overflow: hidden;
+}
+#review-panel.show { transform: translateX(0); }
+
+.review-header {
+  padding: 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.review-header h3 { font-size: 0.9rem; font-weight: 700; flex: 1; }
+.review-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+.review-scroll::-webkit-scrollbar { width: 3px; }
+.review-scroll::-webkit-scrollbar-thumb { background: var(--border-solid); }
+
+.suggest-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-bottom: 10px;
+  background: rgba(255,252,248,0.7);
+  backdrop-filter: blur(8px);
+  transition: all 0.12s;
+}
+.suggest-item:hover { border-color: var(--ink); }
+.suggest-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+.suggest-reason { font-size: 0.76rem; color: var(--muted); font-style: italic; margin-bottom: 8px; line-height: 1.5; }
+.suggest-conds { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px; }
+.suggest-actions { display: flex; gap: 6px; }
+.btn-accept {
+  flex: 1; padding: 6px;
+  background: var(--ai-glow); color: white;
+  border: none; border-radius: var(--radius-btn);
+  font-size: 0.7rem; font-weight: 600;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-accept:hover { opacity: 0.85; }
+.btn-reject {
+  padding: 6px 12px; background: transparent;
+  border: 1.5px solid var(--border-solid); color: var(--muted);
+  border-radius: var(--radius-btn);
+  font-size: 0.7rem; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-reject:hover { border-color: #cc4444; color: #cc4444; }
+
+.review-footer {
+  padding: 14px 18px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+
+/* ─── ONBOARDING ─────────────────────────────────────────── */
+#onboarding {
+  position: fixed; inset: 0;
+  background: rgba(245,242,236,0.85);
+  backdrop-filter: blur(20px);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.35s ease;
+}
+#onboarding.hide { opacity: 0; pointer-events: none; }
+.ob-box { width: 480px; max-width: 94vw; display: flex; flex-direction: column; gap: 0; }
+.ob-step { display: none; flex-direction: column; gap: 24px; }
+.ob-step.active { display: flex; }
+.ob-logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+.ob-logo span { color: var(--ai-glow); }
+.ob-tagline { font-size: 0.92rem; color: var(--muted); line-height: 1.7; font-weight: 400; }
+.ob-disclaimer {
+  background: rgba(255,252,248,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  border-left: 3px solid var(--ai-glow);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 14px 16px;
+  font-size: 0.82rem; color: var(--muted); line-height: 1.65;
+}
+.ob-lang { display: flex; gap: 12px; }
+.ob-lang-btn {
+  flex: 1; padding: 18px;
+  border: 1.5px solid var(--border-solid);
+  border-radius: var(--radius);
+  background: rgba(255,252,248,0.7);
+  backdrop-filter: blur(8px);
+  cursor: pointer; text-align: center; transition: all 0.15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.ob-lang-btn:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: var(--shadow); }
+.ob-lang-btn.selected {
+  border-color: var(--ink); background: var(--ink); color: #f5f2ec;
+  transform: translateY(-2px); box-shadow: var(--shadow);
+}
+.ob-lang-btn .lang-name { font-size: 1.05rem; font-weight: 700; display: block; margin-bottom: 3px; }
+.ob-lang-btn .lang-sub  { font-size: 0.7rem; opacity: 0.6; }
+.ob-lang-btn.selected .lang-name { color: #f5f2ec; }
+.ob-nav { display: flex; gap: 10px; align-items: center; }
+.ob-progress { flex: 1; height: 3px; background: var(--border-solid); border-radius: 2px; overflow: hidden; }
+.ob-progress-fill { height: 100%; background: var(--ink); border-radius: 2px; transition: width 0.3s ease; }
+.ob-step-label { font-size: 0.65rem; color: var(--light); font-weight: 500; }
+
+/* ─── THERAPIST NOTICE ───────────────────────────────────── */
+.therapist-notice {
+  padding: 12px 14px;
+  background: rgba(254,249,236,0.9);
+  border: 1px solid rgba(232,201,106,0.5);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem; color: #7a6020; line-height: 1.55;
+}
+.therapist-notice strong { display: block; margin-bottom: 3px; font-weight: 700; }
+
+/* ─── MULTI PANEL ────────────────────────────────────────── */
+.multi-panel { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.multi-panel-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.multi-panel-names { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+.multi-analysis {
+  font-size: 0.8rem; line-height: 1.7; color: var(--ink);
+  background: rgba(255,252,248,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+/* ─── DIAG PROFILE MODAL ─────────────────────────────────── */
+#diagmodal { position: fixed; inset: 0; background: rgba(26,24,20,0.35); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+#diagmodal.show { opacity: 1; pointer-events: all; }
+
+/* ─── CUSTOM DIAGNOSIS MODAL ─────────────────────────────── */
+#custommodal { position: fixed; inset: 0; background: rgba(26,24,20,0.35); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+#custommodal.show { opacity: 1; pointer-events: all; }
+.custommodal-box { padding: 28px; width: 400px; display: flex; flex-direction: column; gap: 16px; }
+.custommodal-box h2 { font-size: 1.1rem; font-weight: 700; }
+.custommodal-box p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+/* ─── COLOR PICKER ───────────────────────────────────────── */
+.color-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 50%;
+  cursor: pointer; border: 2.5px solid transparent;
+  transition: all 0.12s;
+}
+.color-swatch.selected { border-color: var(--ink); transform: scale(1.15); }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -968,10 +1731,13 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
         </button>
         <div class="accordion-body">
           <div class="diag-list" id="diag-list"></div>
-          <button class="btn-generate" id="btn-gen" onclick="generateWithAI()" disabled>
-            <span class="ai-badge">IA</span>
-            <span id="btn-gen-label">Sugerir síntomas</span>
-          </button>
+          <div style="display:flex;gap:6px">
+            <button class="btn-generate" id="btn-gen" onclick="generateWithAI()" disabled style="flex:1">
+              <span class="ai-badge">AI</span>
+              <span id="btn-gen-label">Sugerir síntomas</span>
+            </button>
+            <button class="btn-icon" onclick="openCustomModal()" title="Agregar diagnóstico personalizado" style="flex-shrink:0;border-radius:50%;font-size:1.1rem">+</button>
+          </div>
         </div>
       </div>
 
@@ -1125,6 +1891,26 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
     <div class="diagmodal-footer">
       <button class="btn-primary" onclick="saveDiagProfile()">Guardar perfil</button>
       <button class="btn-secondary" onclick="closeDiagModal()">Omitir</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM DIAGNOSIS MODAL -->
+<div id="custommodal">
+  <div class="custommodal-box">
+    <h2 id="cm-title">Add a diagnosis</h2>
+    <p id="cm-desc">Enter the name of your diagnosis. The AI will suggest common symptoms for it.</p>
+    <div>
+      <span class="form-label" id="cm-name-label">Diagnosis name</span>
+      <input type="text" id="cm-name" placeholder="e.g. Fibromyalgia, OCD..." oninput="updateCustomBtn()">
+    </div>
+    <div>
+      <span class="form-label" id="cm-color-label">Choose a color</span>
+      <div class="color-picker" id="cm-colors"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="cm-btn" onclick="saveCustomDiag()" disabled>Add →</button>
+      <button class="btn-secondary" onclick="closeCustomModal()" id="cm-cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -1842,8 +2628,19 @@ function promoteToMain() {
   showToast(lang==='es' ? 'Movido al mapa principal' : 'Moved to main map');
 }
 
+function deleteNode(id) {
+  state.nodes = state.nodes.filter(n=>n.id!==id);
+  if (selectedId === id) {
+    selectedId = null;
+    document.getElementById('right-panel').classList.remove('open');
+  }
+  multiSelectedIds.delete(id);
+  saveState(); renderNodeList(); draw();
+}
+
 function deleteSelected() {
   if (!selectedId) return;
+  state.nodes = state.nodes.filter(n=>n.id!==selectedId);
   selectedId = null;
   document.getElementById('right-panel').classList.remove('open');
   saveState(); renderNodeList(); draw();
@@ -2264,10 +3061,11 @@ function renderNodeList() {
       <div class="node-row-name" style="${(n.floating||n.conds.length===0)?'color:var(--muted)':''}">${n.name}</div>
       <div class="node-row-dots">
         ${n.fromAI?'<span class="ai-dot">✦</span>':''}
-        ${(n.floating||n.conds.length===0)?'<span style="font-family:\'DM Mono\',monospace;font-size:0.55rem;color:#aaa090">?</span>':''}
+        ${(n.floating||n.conds.length===0)?'<span style="font-size:0.55rem;color:#aaa090">?</span>':''}
         ${n.notes?'<span style="font-size:0.55rem;color:var(--ai-glow)">●</span>':''}
         ${n.conds.map(c=>`<div class="dot-xs" style="background:${DIAG_MAP[c]?.color||'#888'}"></div>`).join('')}
       </div>
+      <button class="node-row-delete" onclick="event.stopPropagation();deleteNode('${n.id}')" title="Eliminar">×</button>
     </div>
   `).join('');
 }
@@ -2665,8 +3463,108 @@ function startApp() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LEGEND HOVER — illuminate matching elements on canvas
+// CUSTOM DIAGNOSIS
 // ═══════════════════════════════════════════════════════════
+const CUSTOM_COLORS = ['#e05c3a','#3d7ab8','#1aabb0','#7c6ab0','#d4953a','#6aaa4a','#c0622a','#b84a8a','#2a8060','#7a3a20'];
+let customColor = CUSTOM_COLORS[0];
+
+function openCustomModal() {
+  const isEs = lang === 'es';
+  document.getElementById('cm-title').textContent = isEs ? 'Agregar diagnóstico' : 'Add a diagnosis';
+  document.getElementById('cm-desc').textContent = isEs
+    ? 'Escribe el nombre de tu diagnóstico. La IA sugerirá síntomas comunes para él.'
+    : 'Enter the name of your diagnosis. The AI will suggest common symptoms for it.';
+  document.getElementById('cm-name-label').textContent = isEs ? 'Nombre del diagnóstico' : 'Diagnosis name';
+  document.getElementById('cm-color-label').textContent = isEs ? 'Elige un color' : 'Choose a color';
+  document.getElementById('cm-cancel').textContent = isEs ? 'Cancelar' : 'Cancel';
+  document.getElementById('cm-name').value = '';
+  document.getElementById('cm-name').placeholder = isEs ? 'ej. Fibromialgia, TOC...' : 'e.g. Fibromyalgia, OCD...';
+  document.getElementById('cm-btn').disabled = true;
+  customColor = CUSTOM_COLORS[0];
+
+  const picker = document.getElementById('cm-colors');
+  picker.innerHTML = CUSTOM_COLORS.map((c,i) =>
+    `<div class="color-swatch ${i===0?'selected':''}" style="background:${c}" onclick="selectCustomColor('${c}',this)"></div>`
+  ).join('');
+
+  document.getElementById('custommodal').classList.add('show');
+  setTimeout(() => document.getElementById('cm-name').focus(), 200);
+}
+
+function selectCustomColor(color, el) {
+  customColor = color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function updateCustomBtn() {
+  const val = document.getElementById('cm-name').value.trim();
+  document.getElementById('cm-btn').disabled = val.length < 2;
+}
+
+function closeCustomModal() {
+  document.getElementById('custommodal').classList.remove('show');
+}
+
+async function saveCustomDiag() {
+  const name = document.getElementById('cm-name').value.trim();
+  if (!name) return;
+  const isEs = lang === 'es';
+  closeCustomModal();
+
+  // Create custom id
+  const customId = 'custom_' + Date.now();
+  const customDiag = { id: customId, label: name, color: customColor, custom: true };
+
+  // Add to DIAGNOSES and DIAG_MAP
+  DIAGNOSES.push(customDiag);
+  DIAG_MAP[customId] = customDiag;
+
+  // Select it
+  state.selectedDiags.push(customId);
+  state.nodes.push({ id:'hub-'+customId, name, label: name, conds:[customId], hub:true, x:0, y:0, _placed:false });
+  initLayout(); saveState(); renderDiagList(); renderNodeList(); draw();
+
+  // Ask AI to suggest symptoms for this diagnosis
+  showLoading(isEs ? `Buscando síntomas de ${name}...` : `Finding symptoms for ${name}...`);
+
+  const prompt = `You are a psychoeducation assistant.
+
+The user has been diagnosed with: ${name}
+They also have these other diagnoses: ${state.selectedDiags.filter(d=>d!==customId).map(d=>DIAG_MAP[d]?.label||d).join(', ')||'none'}.
+
+Suggest 6-8 common symptoms or experiences for "${name}", focusing on intersections with their other diagnoses if applicable.
+
+Respond ONLY with valid JSON:
+{
+  "symptoms": [
+    { "name": "short symptom name (max 4 words)", "reason": "brief explanation why it appears" }
+  ]
+}`;
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, messages:[{role:'user',content:prompt}] })
+    });
+    const data = await res.json();
+    const text = data.content.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+
+    pendingSuggestions = (parsed.symptoms||[]).map((s,i) => ({
+      name: s.name,
+      conds: [customId],
+      reason: s.reason,
+      _idx: i
+    }));
+    hideLoading();
+    showReviewPanel();
+  } catch(err) {
+    hideLoading();
+    showToast('Error: ' + err.message);
+  }
+}
 function legendHover(type) {
   legendHighlight = type;
   draw();
