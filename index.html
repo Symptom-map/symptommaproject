@@ -2647,111 +2647,175 @@ function deleteSelected() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// DIAGNOSIS PROFILES — questions per condition
+// DIAGNOSIS PROFILES — bilingual
 // ═══════════════════════════════════════════════════════════
-const DIAG_PROFILES = {
-  tda: {
-    title: 'TDA / TDAH',
-    desc: 'Cuéntame cómo se manifiesta tu TDA para sugerirte síntomas más precisos.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Presentación principal',
-        options:['Inatento predominante','Hiperactivo predominante','Combinado','No sé / mixto'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 8' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Estrés','Ruido / ambiente','Tareas largas','Interacciones sociales','Sueño irregular','Pantallas'] },
-      { id:'known',   type:'text', label:'Síntomas que ya sabes que tienes',
-        placeholder:'ej. procrastinación, hiperfoco, olvidos...' },
-    ]
-  },
-  tlp: {
-    title: 'TLP — Borderline',
-    desc: 'El TLP se expresa diferente en cada persona. Esto ayuda a personalizar las sugerencias.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Patrón más reconocible en ti',
-        options:['Miedo al abandono intenso','Cambios de identidad','Impulsividad','Vaivenes emocionales rápidos','Relaciones intensas','Disociación frecuente'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 28' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Rechazo percibido','Conflictos relacionales','Soledad','Estrés laboral','Cambios inesperados','Críticas'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. flashbacks emocionales, vergüenza intensa...' },
-    ]
-  },
-  an: {
-    title: 'Anorexia Nerviosa',
-    desc: 'La AN tiene subtipos muy distintos. Esto es importante para que las sugerencias sean precisas.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Subtipo que te describe mejor',
-        options:['Restrictivo','Atracón / purga','Atracón sin purga','Mixto / cambia','Predomina distorsión corporal'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 16' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Estrés emocional','Situaciones sociales','Cambios corporales','Control / incertidumbre','Comentarios externos','Comparaciones'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. atracones nocturnos, distorsión corporal, rituales...' },
-    ]
-  },
-  aut: {
-    title: 'Rasgos Autistas',
-    desc: 'El perfil autista es muy individual. Tu experiencia específica cambia mucho las sugerencias.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Áreas más presentes en ti',
-        options:['Sensorial (hiper/hipo)','Social / comunicación','Rutinas y rigidez','Intereses intensos','Fatiga autista','Enmascaramiento'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 35' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Sobrecarga sensorial','Cambios de rutina','Interacción social intensa','Imprevistos','Entornos ruidosos','Exigencias sociales'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. meltdowns, shutdowns, hipersensibilidad al ruido...' },
-    ]
-  },
-  cptsd: {
-    title: 'C-PTSD',
-    desc: 'El C-PTSD varía mucho según el tipo de trauma y cómo se procesa. Esto personaliza las sugerencias.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Manifestación más presente',
-        options:['Hipervigilancia','Disociación','Flashbacks emocionales','Vergüenza tóxica','Dificultad de confianza','Colapso ante críticas'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 32' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Conflictos relacionales','Críticas','Abandono percibido','Estrés acumulado','Sensaciones corporales','Entornos de alta demanda'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. disociación bajo estrés, hipervigilancia en grupos...' },
-    ]
-  },
-  bi: {
-    title: 'Trastorno Bipolar',
-    desc: 'El bipolar I, II y ciclotimia tienen perfiles distintos. Cuéntame cómo se expresa en ti.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Tipo o patrón',
-        options:['Bipolar I (manía completa)','Bipolar II (hipomanía)','Ciclotimia','Ciclos rápidos','Mixtos frecuentes','No sé el subtipo exacto'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 24' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Falta de sueño','Estrés elevado','Cambios de estación','Conflictos','Estimulación excesiva','Cambios hormonales'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. hiperfoco en manía, aislamiento en depresión...' },
-    ]
-  },
-  anx: {
-    title: 'Ansiedad Generalizada',
-    desc: 'La ansiedad se expresa diferente en cada persona. Esto ayuda a que las sugerencias sean precisas.',
-    fields: [
-      { id:'subtype', type:'chips', label:'Cómo se manifiesta más en ti',
-        options:['Rumiación constante','Síntomas físicos (tensión, nauseas)','Evitación','Anticipación catastrófica','Ansiedad social','Ansiedad de rendimiento'] },
-      { id:'age',     type:'number', label:'Edad de diagnóstico', placeholder:'ej. 22' },
-      { id:'triggers', type:'chips', label:'Detonadores frecuentes',
-        options:['Incertidumbre','Situaciones sociales','Rendimiento / evaluación','Salud','Dinero / trabajo','Relaciones'] },
-      { id:'known',   type:'text', label:'Síntomas que reconoces en ti',
-        placeholder:'ej. insomnio, tensión muscular, preocupación constante...' },
-    ]
-  },
-};
+function getDiagProfiles() {
+  const es = lang === 'es';
+  return {
+    tda: {
+      title: es ? 'TDA / TDAH' : 'ADHD',
+      desc: es ? 'Cuéntame cómo se manifiesta tu TDA para sugerirte síntomas más precisos.'
+               : 'Tell me how your ADHD manifests to suggest more precise symptoms.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Presentación principal' : 'Primary presentation',
+          options: es ? ['Inatento predominante','Hiperactivo predominante','Combinado','No sé / mixto']
+                     : ['Predominantly inattentive','Predominantly hyperactive','Combined','Not sure / mixed'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 8' : 'e.g. 8' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Estrés','Ruido / ambiente','Tareas largas','Interacciones sociales','Sueño irregular','Pantallas']
+                     : ['Stress','Noise / environment','Long tasks','Social interactions','Irregular sleep','Screens'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que ya sabes que tienes' : 'Symptoms you know you have',
+          placeholder: es ? 'ej. procrastinación, hiperfoco, olvidos...' : 'e.g. procrastination, hyperfocus, forgetfulness...' },
+      ]
+    },
+    tlp: {
+      title: es ? 'TLP — Borderline' : 'BPD — Borderline',
+      desc: es ? 'El TLP se expresa diferente en cada persona. Esto ayuda a personalizar las sugerencias.'
+               : 'BPD expresses differently in each person. This helps personalize suggestions.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Patrón más reconocible en ti' : 'Most recognizable pattern in you',
+          options: es ? ['Miedo al abandono intenso','Cambios de identidad','Impulsividad','Vaivenes emocionales rápidos','Relaciones intensas','Disociación frecuente']
+                     : ['Intense fear of abandonment','Identity shifts','Impulsivity','Rapid emotional swings','Intense relationships','Frequent dissociation'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 28' : 'e.g. 28' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Rechazo percibido','Conflictos relacionales','Soledad','Estrés laboral','Cambios inesperados','Críticas']
+                     : ['Perceived rejection','Relational conflicts','Loneliness','Work stress','Unexpected changes','Criticism'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. flashbacks emocionales, vergüenza intensa...' : 'e.g. emotional flashbacks, intense shame...' },
+      ]
+    },
+    an: {
+      title: es ? 'Anorexia Nerviosa' : 'Anorexia Nervosa',
+      desc: es ? 'La AN tiene subtipos muy distintos. Esto es importante para que las sugerencias sean precisas.'
+               : 'AN has very distinct subtypes. This is important for accurate suggestions.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Subtipo que te describe mejor' : 'Subtype that best describes you',
+          options: es ? ['Restrictivo','Atracón / purga','Atracón sin purga','Mixto / cambia','Predomina distorsión corporal']
+                     : ['Restrictive','Binge / purge','Binge without purge','Mixed / changes','Body image distortion predominant'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 16' : 'e.g. 16' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Estrés emocional','Situaciones sociales','Cambios corporales','Control / incertidumbre','Comentarios externos','Comparaciones']
+                     : ['Emotional stress','Social situations','Body changes','Control / uncertainty','External comments','Comparisons'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. atracones nocturnos, distorsión corporal, rituales...' : 'e.g. nighttime binges, body distortion, rituals...' },
+      ]
+    },
+    aut: {
+      title: es ? 'Rasgos Autistas' : 'Autistic Traits',
+      desc: es ? 'El perfil autista es muy individual. Tu experiencia específica cambia mucho las sugerencias.'
+               : 'Autistic profiles are very individual. Your specific experience greatly shapes suggestions.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Áreas más presentes en ti' : 'Most present areas in you',
+          options: es ? ['Sensorial (hiper/hipo)','Social / comunicación','Rutinas y rigidez','Intereses intensos','Fatiga autista','Enmascaramiento']
+                     : ['Sensory (hyper/hypo)','Social / communication','Routines and rigidity','Intense interests','Autistic fatigue','Masking'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 35' : 'e.g. 35' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Sobrecarga sensorial','Cambios de rutina','Interacción social intensa','Imprevistos','Entornos ruidosos','Exigencias sociales']
+                     : ['Sensory overload','Routine changes','Intense social interaction','Unexpected events','Noisy environments','Social demands'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. meltdowns, shutdowns, hipersensibilidad al ruido...' : 'e.g. meltdowns, shutdowns, noise hypersensitivity...' },
+      ]
+    },
+    cptsd: {
+      title: 'C-PTSD',
+      desc: es ? 'El C-PTSD varía mucho según el tipo de trauma y cómo se procesa. Esto personaliza las sugerencias.'
+               : 'C-PTSD varies greatly depending on trauma type and processing. This personalizes suggestions.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Manifestación más presente' : 'Most present manifestation',
+          options: es ? ['Hipervigilancia','Disociación','Flashbacks emocionales','Vergüenza tóxica','Dificultad de confianza','Colapso ante críticas']
+                     : ['Hypervigilance','Dissociation','Emotional flashbacks','Toxic shame','Difficulty trusting','Collapse under criticism'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 32' : 'e.g. 32' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Conflictos relacionales','Críticas','Abandono percibido','Estrés acumulado','Sensaciones corporales','Entornos de alta demanda']
+                     : ['Relational conflicts','Criticism','Perceived abandonment','Accumulated stress','Body sensations','High-demand environments'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. disociación bajo estrés, hipervigilancia en grupos...' : 'e.g. dissociation under stress, hypervigilance in groups...' },
+      ]
+    },
+    bi: {
+      title: es ? 'Trastorno Bipolar' : 'Bipolar Disorder',
+      desc: es ? 'El bipolar I, II y ciclotimia tienen perfiles distintos. Cuéntame cómo se expresa en ti.'
+               : 'Bipolar I, II and cyclothymia have distinct profiles. Tell me how it expresses in you.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Tipo o patrón' : 'Type or pattern',
+          options: es ? ['Bipolar I (manía completa)','Bipolar II (hipomanía)','Ciclotimia','Ciclos rápidos','Mixtos frecuentes','No sé el subtipo exacto']
+                     : ['Bipolar I (full mania)','Bipolar II (hypomania)','Cyclothymia','Rapid cycling','Frequent mixed states','Not sure of exact subtype'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 24' : 'e.g. 24' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Falta de sueño','Estrés elevado','Cambios de estación','Conflictos','Estimulación excesiva','Cambios hormonales']
+                     : ['Lack of sleep','High stress','Seasonal changes','Conflicts','Excessive stimulation','Hormonal changes'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. hiperfoco en manía, aislamiento en depresión...' : 'e.g. hyperfocus in mania, isolation in depression...' },
+      ]
+    },
+    anx: {
+      title: es ? 'Ansiedad Generalizada' : 'Generalized Anxiety',
+      desc: es ? 'La ansiedad se expresa diferente en cada persona. Esto ayuda a que las sugerencias sean precisas.'
+               : 'Anxiety expresses differently in each person. This helps make suggestions more accurate.',
+      fields: [
+        { id:'subtype', type:'chips',
+          label: es ? 'Cómo se manifiesta más en ti' : 'How it manifests most in you',
+          options: es ? ['Rumiación constante','Síntomas físicos (tensión, nauseas)','Evitación','Anticipación catastrófica','Ansiedad social','Ansiedad de rendimiento']
+                     : ['Constant rumination','Physical symptoms (tension, nausea)','Avoidance','Catastrophic anticipation','Social anxiety','Performance anxiety'] },
+        { id:'age', type:'number',
+          label: es ? 'Edad de diagnóstico' : 'Age of diagnosis',
+          placeholder: es ? 'ej. 22' : 'e.g. 22' },
+        { id:'triggers', type:'chips',
+          label: es ? 'Detonadores frecuentes' : 'Frequent triggers',
+          options: es ? ['Incertidumbre','Situaciones sociales','Rendimiento / evaluación','Salud','Dinero / trabajo','Relaciones']
+                     : ['Uncertainty','Social situations','Performance / evaluation','Health','Money / work','Relationships'] },
+        { id:'known', type:'text',
+          label: es ? 'Síntomas que reconoces en ti' : 'Symptoms you recognize in yourself',
+          placeholder: es ? 'ej. insomnio, tensión muscular, preocupación constante...' : 'e.g. insomnia, muscle tension, constant worry...' },
+      ]
+    },
+  };
+}
 
 let currentDiagModalId = null;
 
 function openDiagModal(id) {
+  const DIAG_PROFILES = getDiagProfiles();
   const profile = DIAG_PROFILES[id];
   if (!profile) return;
   currentDiagModalId = id;
   const diag = DIAG_MAP[id];
+  const es = lang === 'es';
   document.getElementById('diagmodal-title').textContent = profile.title;
   document.getElementById('diagmodal-desc').textContent = profile.desc;
+  // Update footer buttons
+  document.querySelector('.diagmodal-footer .btn-primary').textContent = es ? 'Guardar perfil' : 'Save profile';
+  document.querySelector('.diagmodal-footer .btn-secondary').textContent = es ? 'Omitir' : 'Skip';
 
   const saved = state.diagProfiles?.[id] || {};
   const body = document.getElementById('diagmodal-body');
@@ -2759,8 +2823,8 @@ function openDiagModal(id) {
     if (f.type === 'chips') {
       const chips = f.options.map(o => {
         const on = (saved[f.id]||[]).includes(o);
-        return `<span class="chip ${on?'on':''}" style="${on?`background:${diag.color}`:''}"\
-          onclick="toggleChip(this,'${diag.color}')">${o}</span>`;
+        return `<span class="chip ${on?'on':''}" style="${on?`background:${diag?.color||'#888'}`:''}"\
+          onclick="toggleChip(this,'${diag?.color||'#888'}')">${o}</span>`;
       }).join('');
       return `<div class="profile-field"><label>${f.label}</label><div class="chip-group" data-field="${f.id}">${chips}</div></div>`;
     }
@@ -2787,22 +2851,25 @@ function toggleChip(el, color) {
 function saveDiagProfile() {
   if (!currentDiagModalId) return;
   if (!state.diagProfiles) state.diagProfiles = {};
+  const DIAG_PROFILES = getDiagProfiles();
   const profile = DIAG_PROFILES[currentDiagModalId];
   const saved = {};
-  profile.fields.forEach(f => {
-    if (f.type === 'chips') {
-      const group = document.querySelector(`[data-field="${f.id}"]`);
-      saved[f.id] = [...group.querySelectorAll('.chip.on')].map(c=>c.textContent);
-    } else {
-      const el = document.querySelector(`input[data-field="${f.id}"]`);
-      if (el) saved[f.id] = el.value.trim();
-    }
-  });
+  if (profile) {
+    profile.fields.forEach(f => {
+      if (f.type === 'chips') {
+        const group = document.querySelector(`[data-field="${f.id}"]`);
+        saved[f.id] = [...group.querySelectorAll('.chip.on')].map(c=>c.textContent);
+      } else {
+        const el = document.querySelector(`input[data-field="${f.id}"]`);
+        if (el) saved[f.id] = el.value.trim();
+      }
+    });
+  }
   state.diagProfiles[currentDiagModalId] = saved;
   saveState();
   renderDiagList();
   closeDiagModal();
-  showToast('Perfil guardado — las sugerencias serán más precisas');
+  showToast(lang==='es' ? 'Perfil guardado — las sugerencias serán más precisas' : 'Profile saved — suggestions will be more accurate');
 }
 
 function closeDiagModal() {
