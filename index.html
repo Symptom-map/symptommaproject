@@ -3587,6 +3587,10 @@ function toggleLegend() {
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
+
+// Set lang FIRST from saved state before anything renders
+if (state.lang) lang = state.lang;
+
 window.addEventListener('resize', resize);
 resize();
 renderDiagList();
@@ -3599,13 +3603,12 @@ if (state.nodes.length > 0 || state.selectedDiags.length > 0) {
   ob.style.display = 'none';
   document.getElementById('legend').classList.remove('hidden');
   if (state.username) {
-    document.getElementById('map-name').textContent = state.username + (lang==='es' ? "'s map" : "'s map");
+    const mapLabel = lang === 'es' ? `mapa de ${state.username}` : `${state.username}'s map`;
+    document.getElementById('map-name').textContent = mapLabel;
   }
 } else {
-  // First time — hide legend until app starts
   document.getElementById('legend').classList.add('hidden');
-  // Pre-select lang if saved
-  if (state.lang) { setLang(state.lang); }
+  if (state.lang) setLang(state.lang);
 }
 
 if (state.nodes.length > 0) {
