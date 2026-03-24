@@ -5,29 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SymptomMap</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
 
 :root {
-  --bg:       #f5f2ec;
-  --surface:  rgba(255,252,248,0.72);
-  --surface2: rgba(235,230,220,0.8);
-  --border:   rgba(180,170,155,0.35);
-  --border-solid: #ccc8be;
-  --ink:      #1a1814;
-  --muted:    #7a7060;
-  --light:    #aaa090;
-  --tda:   #c0622a;
-  --tlp:   #3d7ab8;
-  --an:    #e05c3a;
-  --aut:   #1aabb0;
-  --cptsd: #7c6ab0;
-  --bi:    #d4953a;
-  --anx:   #6aaa4a;
-  --ai-glow: #1aabb0;
-  --glass: rgba(255,252,248,0.65);
-  --glass-border: rgba(255,255,255,0.5);
-  --shadow: 0 4px 24px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  /* ── Background & surfaces ── */
+  --bg:           #f0f4f8;
+  --surface:      rgba(255,255,255,0.72);
+  --surface2:     rgba(240,244,248,0.85);
+  --border:       rgba(148,163,184,0.25);
+  --border-solid: #cbd5e1;
+
+  /* ── Text ── */
+  --ink:    #1e293b;
+  --muted:  #64748b;
+  --light:  #94a3b8;
+
+  /* ── Sulley brand gradient ── */
+  --brand-from: #38b6ff;
+  --brand-to:   #9d50bb;
+  --brand-gradient: linear-gradient(135deg, #38b6ff 0%, #9d50bb 100%);
+
+  /* ── Diagnosis colors (Sulley palette) ── */
+  --tda:   #3b82f6;
+  --tlp:   #a855f7;
+  --an:    #fb7185;
+  --aut:   #10b981;
+  --cptsd: #f59e0b;
+  --bi:    #6366f1;
+  --anx:   #84cc16;
+  --ai-glow: #38b6ff;
+
+  /* ── Glass & shadows ── */
+  --glass:        rgba(255,255,255,0.7);
+  --glass-border: rgba(255,255,255,0.6);
+  --shadow:       0 4px 20px rgba(0,0,0,0.06);
+  --shadow-lg:    0 12px 40px rgba(0,0,0,0.1);
+
+  /* ── Radius & spacing ── */
+  --radius:     16px;
+  --radius-sm:  10px;
+  --radius-btn: 24px;
+}
   --radius: 14px;
   --radius-sm: 8px;
   --radius-btn: 20px;
@@ -37,10 +55,11 @@
 
 body {
   background: var(--bg);
-  background-image: radial-gradient(ellipse at 20% 20%, rgba(192,98,42,0.06) 0%, transparent 50%),
-                    radial-gradient(ellipse at 80% 80%, rgba(61,122,184,0.06) 0%, transparent 50%);
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(56,182,255,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(157,80,187,0.07) 0%, transparent 55%);
   color: var(--ink);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   height: 100vh;
   overflow: hidden;
   display: flex;
@@ -64,15 +83,19 @@ body {
 }
 
 .logo {
-  font-weight: 700;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.03em;
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 1px;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.logo-dot { color: var(--ai-glow); }
+.logo-dot { display: none; /* gradient covers full name now */ }
 .topbar-sep { flex: 1; }
 
 .btn-icon {
@@ -164,26 +187,27 @@ body {
 }
 .diag-item.active .diag-name { color: var(--ink); font-weight: 500; }
 
-/* Generate button */
+/* Generate button — Sulley gradient */
 .btn-generate {
   width: 100%;
-  padding: 10px;
-  background: var(--ink);
-  color: #f5f2ec;
+  padding: 11px;
+  background: var(--brand-gradient);
+  color: white;
   border: none;
   border-radius: var(--radius-btn);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   letter-spacing: 0.01em;
+  box-shadow: 0 4px 15px rgba(56,182,255,0.3);
 }
-.btn-generate:hover { opacity: 0.85; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-generate:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56,182,255,0.4); }
 .btn-generate:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
 
 .ai-badge {
@@ -625,6 +649,48 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
   transition: all 0.12s;
 }
 #legend-toggle:hover { color: var(--ink); border-color: var(--ink); }
+
+/* ─── RIGHT PANEL ACCORDIONS ─────────────────────────────── */
+.rp-accordion {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255,255,255,0.5);
+}
+
+.rp-acc-header {
+  width: 100%; padding: 10px 14px;
+  background: none; border: none;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--muted); text-align: left;
+  transition: color 0.12s, background 0.12s;
+}
+.rp-acc-header:hover { color: var(--ink); background: rgba(255,255,255,0.4); }
+.rp-acc-header.open  { color: var(--ink); }
+
+.rp-acc-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.rp-ai-badge-sm {
+  background: var(--brand-gradient);
+  color: white;
+  font-size: 0.55rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.rp-field-group { display: flex; flex-direction: column; gap: 4px; }
+
+.rp-profile-pill {
+  padding: 8px 12px;
+  background: rgba(56,182,255,0.08);
+  border: 1px solid rgba(56,182,255,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem; color: var(--muted);
+  line-height: 1.5;
+}
 
 /* ─── TOAST ───────────────────────────────────────────────── */
 #toast {
@@ -1790,40 +1856,70 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
     <canvas id="graph"></canvas>
   </div>
 
-  <!-- RIGHT PANEL -->
+  <!-- RIGHT PANEL — three collapsible sections -->
   <div class="right-panel" id="right-panel">
     <div class="rp-inner" id="rp-inner" style="position:relative">
       <button class="rp-close" onclick="closeRightPanel()">×</button>
 
-      <!-- Single symptom view -->
+      <!-- ── Single symptom view ── -->
       <div id="rp-single">
+
+        <!-- Section 1: Symptom detail header (always visible) -->
         <div class="rp-title" id="rp-title">—</div>
-        <div class="rp-tags" id="rp-tags"></div>
-        <div id="rp-ai-note"></div>
-        <div id="rp-therapist-notice" style="display:none" class="therapist-notice">
-          <strong id="rp-therapist-title">💬 Worth exploring with your therapist</strong>
-          <span id="rp-therapist-body">We couldn't find a clear connection between this symptom and your diagnoses. It may be worth exploring with your doctor or therapist.</span>
-        </div>
-        <div>
-          <div class="rp-section-label" id="rp-when-label">When / how does it appear?</div>
-          <textarea class="rp-note-area" id="rp-context" placeholder="e.g. in crowded spaces, when waking up..." style="height:64px;margin-bottom:8px"></textarea>
-        </div>
-        <div>
-          <div class="rp-section-label" id="rp-notes-label">Notes</div>
-          <textarea class="rp-note-area" id="rp-notes" placeholder="What triggers it? How does it feel..."></textarea>
-        </div>
-        <div class="rp-actions">
-          <button class="btn-save" onclick="saveNote()" id="btn-save-note">Save</button>
-          <button class="btn-del" onclick="deleteSelected()" id="btn-delete-node">Delete</button>
-        </div>
-        <div id="rp-promote" style="display:none;margin-top:6px">
-          <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()" id="btn-promote">
-            ↑ Move to main map
+        <div class="rp-tags" id="rp-tags" style="margin-bottom:12px"></div>
+
+        <!-- Section 2: Symptom Detail accordion -->
+        <div class="rp-accordion" id="rpa-detail">
+          <button class="rp-acc-header open" onclick="toggleRpAccordion('rpa-detail')">
+            <span id="rpa-detail-label">Symptom detail</span>
+            <span class="acc-arrow">▾</span>
           </button>
+          <div class="rp-acc-body">
+            <div id="rp-therapist-notice" style="display:none" class="therapist-notice">
+              <strong id="rp-therapist-title">💬 Worth exploring with your therapist</strong>
+              <span id="rp-therapist-body">We couldn't find a clear connection between this symptom and your diagnoses. It may be worth exploring with your doctor or therapist.</span>
+            </div>
+            <div class="rp-field-group">
+              <div class="rp-section-label" id="rp-when-label">When / how does it appear?</div>
+              <textarea class="rp-note-area" id="rp-context" placeholder="e.g. in crowded spaces, when waking up..." style="height:60px"></textarea>
+            </div>
+            <div class="rp-field-group">
+              <div class="rp-section-label" id="rp-notes-label">Notes</div>
+              <textarea class="rp-note-area" id="rp-notes" placeholder="What triggers it? How does it feel..."></textarea>
+            </div>
+            <div class="rp-actions">
+              <button class="btn-save" onclick="saveNote()" id="btn-save-note">Save</button>
+              <button class="btn-del" onclick="deleteSelected()" id="btn-delete-node">Delete</button>
+            </div>
+            <div id="rp-promote" style="display:none;margin-top:8px">
+              <button class="btn-add" style="width:100%;border-color:var(--ink);color:var(--ink)" onclick="promoteToMain()" id="btn-promote">
+                ↑ Move to main map
+              </button>
+            </div>
+          </div>
         </div>
+
+        <!-- Section 3: AI Analysis accordion -->
+        <div class="rp-accordion" id="rpa-ai" style="margin-top:8px">
+          <button class="rp-acc-header" onclick="toggleRpAccordion('rpa-ai')">
+            <span id="rpa-ai-label">AI Analysis</span>
+            <span class="rp-ai-badge-sm">AI</span>
+            <span class="acc-arrow" style="margin-left:auto">▾</span>
+          </button>
+          <div class="rp-acc-body" style="display:none">
+            <div id="rp-ai-note"></div>
+            <div id="rp-profile-context" style="display:none" class="rp-profile-pill"></div>
+            <button class="btn-generate" id="rp-analyze-btn" onclick="analyzeCurrentSymptom()" style="margin-top:8px;font-size:0.78rem;padding:8px">
+              <span class="ai-badge">AI</span>
+              <span id="rp-analyze-label">Analyze this symptom</span>
+            </button>
+            <div id="rp-analysis-result" style="display:none" class="multi-analysis" style="margin-top:8px"></div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Multi-selection view -->
+      <!-- ── Multi-selection view ── -->
       <div id="rp-multi" style="display:none">
         <div class="multi-panel">
           <div class="multi-panel-title" id="mp-title">Analyzing intersection</div>
@@ -1923,19 +2019,19 @@ canvas { position: absolute; top: 0; left: 0; cursor: default; }
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════
 const DIAGNOSES = [
-  { id:'tda',   label:'TDA\nTDAH',             color:'#c0622a' },
-  { id:'tlp',   label:'TLP\nBorderline',        color:'#3d7ab8' },
-  { id:'an',    label:'Anorexia\nNerviosa',     color:'#e05c3a' },
-  { id:'aut',   label:'Rasgos\nAutistas',       color:'#1aabb0' },
-  { id:'cptsd', label:'C-PTSD',                 color:'#7c6ab0' },
-  { id:'bi',    label:'Trastorno\nBipolar',     color:'#d4953a' },
-  { id:'anx',   label:'Ansiedad\nGeneralizada', color:'#6aaa4a' },
+  { id:'tda',   label:'TDA\nTDAH',             color:'#3b82f6' },
+  { id:'tlp',   label:'TLP\nBorderline',        color:'#a855f7' },
+  { id:'an',    label:'Anorexia\nNerviosa',     color:'#fb7185' },
+  { id:'aut',   label:'Rasgos\nAutistas',       color:'#10b981' },
+  { id:'cptsd', label:'C-PTSD',                 color:'#f59e0b' },
+  { id:'bi',    label:'Trastorno\nBipolar',     color:'#6366f1' },
+  { id:'anx',   label:'Ansiedad\nGeneralizada', color:'#84cc16' },
 ];
 
 const DIAG_MAP = Object.fromEntries(DIAGNOSES.map(d => [d.id, d]));
 const HUB_R  = 46;
 const SYM_R  = 6;
-const AI_COLOR = '#1aabb0';
+const AI_COLOR = '#38b6ff';
 
 // ═══════════════════════════════════════════════════════════
 // STATE
@@ -2503,6 +2599,18 @@ function selectNode(id, openPanel = true) {
     document.getElementById('rp-single').style.display = 'block';
     document.getElementById('rp-multi').style.display = 'none';
     document.getElementById('rp-therapist-notice').style.display = 'none';
+    // Open detail accordion, close AI accordion
+    const detailBtn = document.querySelector('#rpa-detail .rp-acc-header');
+    const detailBody = document.querySelector('#rpa-detail .rp-acc-body');
+    if (detailBtn) { detailBtn.classList.add('open'); detailBody.style.display = 'flex'; }
+    const aiBody = document.querySelector('#rpa-ai .rp-acc-body');
+    const aiBtn = document.querySelector('#rpa-ai .rp-acc-header');
+    if (aiBody) { aiBody.style.display = 'none'; aiBtn.classList.remove('open'); }
+    // Reset AI results
+    const analysisResult = document.getElementById('rp-analysis-result');
+    if (analysisResult) { analysisResult.style.display = 'none'; analysisResult.textContent = ''; }
+    const profileEl = document.getElementById('rp-profile-context');
+    if (profileEl) profileEl.style.display = 'none';
     document.getElementById('rp-title').textContent = n.name;
     document.getElementById('rp-tags').innerHTML = n.conds.map(c => {
       const d = DIAG_MAP[c]; if(!d) return '';
@@ -2880,9 +2988,74 @@ function closeDiagModal() {
 // ═══════════════════════════════════════════════════════════
 // ACCORDION
 // ═══════════════════════════════════════════════════════════
+function toggleRpAccordion(id) {
+  const sec  = document.getElementById(id);
+  const btn  = sec.querySelector('.rp-acc-header');
+  const body = sec.querySelector('.rp-acc-body');
+  const open = btn.classList.toggle('open');
+  body.style.display = open ? 'flex' : 'none';
+}
+
+async function analyzeCurrentSymptom() {
+  if (!selectedId) return;
+  const n = state.nodes.find(nd=>nd.id===selectedId);
+  if (!n) return;
+  const isEs = lang === 'es';
+
+  // Build rich profile context from onboarding answers
+  const profileLines = state.selectedDiags.map(id => {
+    const p = state.diagProfiles?.[id];
+    if (!p) return null;
+    const diag = DIAG_MAP[id];
+    const parts = [];
+    if (p.subtype?.length) parts.push(Array.isArray(p.subtype) ? p.subtype.join(', ') : p.subtype);
+    if (p.triggers?.length) parts.push(`triggers: ${Array.isArray(p.triggers) ? p.triggers.join(', ') : p.triggers}`);
+    if (p.known) parts.push(`known symptoms: ${p.known}`);
+    return parts.length ? `${diag.label.replace('\n',' ')}: ${parts.join(' | ')}` : null;
+  }).filter(Boolean);
+
+  // Show profile context in the panel
+  const profileEl = document.getElementById('rp-profile-context');
+  if (profileLines.length > 0 && profileEl) {
+    profileEl.style.display = 'block';
+    profileEl.innerHTML = `<strong style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--light)">Profile context</strong><br>${profileLines.join('<br>')}`;
+  }
+
+  showLoading(isEs ? 'Analizando síntoma...' : 'Analyzing symptom...');
+
+  const diagLabels = state.selectedDiags.map(d=>DIAG_MAP[d]?.label.replace('\n',' ')||d).join(', ');
+  const prompt = `You are a psychoeducation assistant. The user has: ${diagLabels}.
+${profileLines.length ? `\nTheir profile:\n${profileLines.join('\n')}` : ''}
+
+They are looking at this symptom: "${n.name}"${n.context ? ` (appears: ${n.context})` : ''}
+It is linked to: ${n.conds.map(c=>DIAG_MAP[c]?.label.replace('\n',' ')||c).join(', ')||'unknown'}
+
+In 2-3 warm, non-clinical sentences, explain:
+- Why this symptom appears in their specific profile
+- How their personal profile (subtypes, triggers) shapes this experience
+
+Respond in ${isEs ? 'Spanish' : 'English'}. Speak directly to them using "you"/"tú".`;
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content:prompt}] })
+    });
+    const data = await res.json();
+    const text = data.content.map(b=>b.text||'').join('').trim();
+    hideLoading();
+    const resultEl = document.getElementById('rp-analysis-result');
+    resultEl.textContent = text;
+    resultEl.style.display = 'block';
+  } catch(err) {
+    hideLoading();
+    showToast('Error: ' + err.message);
+  }
+}
+
 function toggleAccordion(id) {
   const sec  = document.getElementById(id);
-  const btn  = sec.querySelector('.accordion-header');
   const body = sec.querySelector('.accordion-body');
   const open = btn.classList.toggle('open');
   if (id === 'acc-list') {
@@ -3468,6 +3641,14 @@ function applyLang() {
   if (addHint) addHint.textContent = es
     ? 'Sin condición → nodo flotante. "Analizar origen" → la IA busca qué síntomas lo generan.'
     : 'No condition → floating node. "Analyze origin" → AI finds what generates it.';
+
+  // Right panel accordion labels
+  const rpaDetail = document.getElementById('rpa-detail-label');
+  if (rpaDetail) rpaDetail.textContent = es ? 'Detalle del síntoma' : 'Symptom detail';
+  const rpaAi = document.getElementById('rpa-ai-label');
+  if (rpaAi) rpaAi.textContent = es ? 'Análisis IA' : 'AI Analysis';
+  const rpAnalyzeBtn = document.getElementById('rp-analyze-label');
+  if (rpAnalyzeBtn) rpAnalyzeBtn.textContent = es ? 'Analizar este síntoma' : 'Analyze this symptom';
 
   // Right panel labels
   const rpWhen = document.getElementById('rp-when-label');
