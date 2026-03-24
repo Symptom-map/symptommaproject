@@ -1,0 +1,39 @@
+export default function App() {
+  return (
+    <div className="flex h-screen w-screen bg-slate-50 font-outfit overflow-hidden">
+
+      {/* Sidebar */}
+      <aside className="w-80 h-full flex-shrink-0 bg-white/60 backdrop-blur-md border-r border-slate-200 flex flex-col">
+        <div className="p-6 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-700">Panel</h2>
+          <p className="text-sm text-slate-400 mt-1">Navegación y controles</p>
+        </div>
+        <div className="flex-1 p-4">
+          {/* Contenido del sidebar — próximamente */}
+        </div>
+      </aside>
+
+      {/* Columna principal */}
+      <div className="flex flex-col flex-1 min-w-0">
+
+        {/* Header */}
+        <header className="h-16 flex-shrink-0 bg-white/70 backdrop-blur-md border-b border-slate-200 flex items-center px-6">
+          <h1 className="text-xl font-semibold text-slate-800">Mi Proyecto</h1>
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-sm text-slate-400">v0.1</span>
+          </div>
+        </header>
+
+        {/* Área de contenido principal */}
+        <main className="flex-1 overflow-auto p-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-slate-200 mx-auto mb-4" />
+            <p className="text-slate-500 font-medium">Contenido principal</p>
+            <p className="text-slate-400 text-sm mt-1">Aquí irá el grafo y la lógica</p>
+          </div>
+        </main>
+
+      </div>
+    </div>
+  )
+}
