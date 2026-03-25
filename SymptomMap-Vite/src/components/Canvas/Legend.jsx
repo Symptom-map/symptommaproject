@@ -1,91 +1,132 @@
 // src/components/Canvas/Legend.jsx - DISEÑO ORIGINAL RESTAURADO
 import { useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
-const Legend = () => {
-  const [isOpen, setIsOpen] = useState(true);
+export default function Legend() {
+  const { t } = useTranslation();
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (!isOpen) {
-    // Botón pequeño para volver a abrir
+  if (!isVisible) {
     return (
-      <div 
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '20px',
-          background: 'rgba(255, 255, 255, 0.85)',
-          border: '1px solid rgba(148, 163, 184, 0.25)',
-          borderRadius: '8px',
-          padding: '10px',
-          cursor: 'pointer',
-          zIndex: 10,
-          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
-          backdropFilter: 'blur(8px)'
-        }}
-        onClick={() => setIsOpen(true)}
+      <button
+        onClick={() => setIsVisible(true)}
+        className="legend-toggle-btn"
       >
-        <span style={{ fontSize: '16px' }}>📖</span>
-      </div>
+        {t('legendToggle')}
+      </button>
     );
   }
 
   return (
-    <div 
-      style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        background: 'rgba(255, 255, 255, 0.85)',
-        border: '1px solid rgba(148, 163, 184, 0.25)',
-        borderRadius: '8px',
-        padding: '10px 20px 10px 12px',
-        fontFamily: "'DM Mono', monospace",
-        fontSize: '0.6rem',
-        color: '#64748b',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)',
-        backdropFilter: 'blur(8px)'
-      }}
-    >
-      {/* Header con botón de cerrar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-        <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94a3b8' }}>
-          Leyenda
-        </div>
+    <div className="legend">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <h3 className="legend-title">
+          {t('legTitle')}
+        </h3>
         <button
-          onClick={() => setIsOpen(false)}
+          onClick={() => setIsVisible(false)}
           style={{
             background: 'none',
             border: 'none',
-            color: '#94a3b8',
+            color: 'var(--light)',
+            fontSize: '0.9rem',
             cursor: 'pointer',
-            fontSize: '16px',
-            padding: 0,
-            lineHeight: 1
+            padding: '2px',
+            lineHeight: 1,
+            transition: 'color 0.15s'
           }}
-          title="Cerrar leyenda"
+          onMouseEnter={(e) => e.target.style.color = 'var(--ink)'}
+          onMouseLeave={(e) => e.target.style.color = 'var(--light)'}
         >
           ✕
         </button>
       </div>
 
-      {/* Items de la leyenda */}
-      {[
-        { label: 'Diagnóstico (hub)', el: <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #64748b', flexShrink: 0 }} /> },
-        { label: 'Síntoma individual', el: <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#64748b', flexShrink: 0 }} /> },
-        { label: 'Síntoma compartido', el: <div style={{ width: 10, height: 10, borderRadius: '50%', border: '2px solid #64748b', flexShrink: 0 }} /> },
-        { label: 'Conexión fuerte', el: <div style={{ width: 22, height: 3, background: '#64748b', borderRadius: 1, flexShrink: 0, opacity: 0.9 }} /> },
-        { label: 'Conexión tenue', el: <div style={{ width: 22, height: 1, background: '#64748b', borderRadius: 1, flexShrink: 0, opacity: 0.4 }} /> },
-      ].map(({ label, el }) => (
-        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          {el}
-          <span>{label}</span>
+      {/* Legend items */}
+      <div style={{ fontSize: '0.75rem' }}>
+        {/* Hub */}
+        <div className="legend-item">
+          <div style={{
+            width: '48px',
+            height: '24px',
+            border: '2px solid var(--border-solid)',
+            borderRadius: '50%',
+            flexShrink: 0
+          }} />
+          <span>{t('legHub')}</span>
         </div>
-      ))}
+
+        {/* Individual symptom */}
+        <div className="legend-item">
+          <div style={{
+            width: '24px',
+            height: '24px',
+            background: 'var(--border-solid)',
+            borderRadius: '50%',
+            flexShrink: 0
+          }} />
+          <span>{t('legSym')}</span>
+        </div>
+
+        {/* Shared symptom */}
+        <div className="legend-item">
+          <div style={{
+            width: '24px',
+            height: '24px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)',
+            borderRadius: '50%',
+            flexShrink: 0
+          }} />
+          <span>{t('legMulti')}</span>
+        </div>
+
+        {/* Divider */}
+        <div style={{
+          borderTop: '1px solid var(--border)',
+          margin: '10px 0'
+        }} />
+
+        {/* Strong connection */}
+        <div className="legend-item">
+          <div style={{
+            width: '48px',
+            height: '2px',
+            background: 'var(--ink)',
+            flexShrink: 0
+          }} />
+          <span>{t('legThick')}</span>
+        </div>
+
+        {/* Weak connection */}
+        <div className="legend-item">
+          <div style={{
+            width: '48px',
+            height: '1px',
+            background: 'var(--light)',
+            flexShrink: 0,
+            backgroundImage: 'linear-gradient(to right, var(--light) 50%, transparent 50%)',
+            backgroundSize: '8px 1px',
+            backgroundRepeat: 'repeat-x'
+          }} />
+          <span>{t('legDash')}</span>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div style={{
+        marginTop: '14px',
+        paddingTop: '12px',
+        borderTop: '1px solid var(--border)'
+      }}>
+        <p style={{
+          fontSize: '0.65rem',
+          color: 'var(--muted)',
+          lineHeight: 1.6
+        }}>
+          {t('instructions')}
+        </p>
+      </div>
     </div>
   );
-};
-
-export default Legend;
+}
