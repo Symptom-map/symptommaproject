@@ -220,17 +220,18 @@ function App() {
                 isCollapsed={sidebarCollapsed}
               />
 
-              {/* Canvas */}
-              <div className="flex-1 relative overflow-hidden">
-                <SymptomGraph
-                  nodes={state.nodes}
-                  diagMap={window.DIAG_MAP}
-                  onNodeClick={handleSymptomClick}
-                />
-
-                {/* Legend */}
-                <Legend />
-              </div>
+             {/* Canvas */}
+<div className="flex-1 relative overflow-hidden">
+  <SymptomGraph
+    nodes={state.nodes}
+    onNodeSelect={handleSymptomClick}
+    onNodeMove={() => {}}
+    selectedId={null}
+    highlightedDiags={new Set(state.selectedDiags)}
+  />
+  {/* Legend */}
+  <Legend />
+</div> 
 
               {/* Right Panel */}
               <RightPanel
@@ -277,3 +278,5 @@ function App() {
 }
 
 export default App;
+
+
