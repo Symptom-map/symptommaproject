@@ -224,15 +224,11 @@ function App() {
 <div className="flex-1 relative overflow-hidden">
   <SymptomGraph
     nodes={state.nodes}
-    onNodeSelect={handleSymptomClick}
-    onNodeMove={() => {}}
-    selectedId={null}
-    highlightedDiags={new Set(state.selectedDiags)}
+    diagMap={window.DIAG_MAP}
+    onNodeClick={handleSymptomClick}
   />
-  {/* Legend */}
   <Legend />
-</div> 
-
+</div>
               {/* Right Panel */}
               <RightPanel
                 suggestions={suggestions}
