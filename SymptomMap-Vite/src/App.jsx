@@ -1,159 +1,279 @@
-import { useState, useCallback } from 'react'
-import SymptomGraph, { DIAGNOSES, DIAG_MAP } from './components/SymptomGraph'
+// src/App.jsx - CON MODAL DE PERFIL INTEGRADO
+import { useState, useEffect } from 'react';
+import { LanguageProvider } from './hooks/useTranslation';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { useClaudeAPI } from './hooks/useClaudeAPI';
+import { DIAGNOSES, DIAG_MAP, CUSTOM_COLORS } from './utils/constants';
 
-export default function App() {
-  const [highlightedDiags, setHighlightedDiags] = useState(new Set())
-  const [selectedNode,     setSelectedNode]     = useState(null)
+import Onboarding from './components/Onboarding/Onboarding';
+import Topbar from './components/Layout/Topbar';
+import LeftPanel from './components/LeftPanel/LeftPanel';
+import RightPanel from './components/RightPanel/RightPanel';
+import SymptomGraph from './components/Canvas/SymptomGraph';
+import Legend from './components/Canvas/Legend';
+import CustomDiagnosisModal from './components/Modals/CustomDiagnosisModal';
+import DiagnosisProfileModal from './components/Modals/DiagnosisProfileModal';
+import Toast from './components/Modals/Toast';
+import LoadingOverlay from './components/Modals/LoadingOverlay';
 
-  const toggleHighlight = (diagId) => {
-    setHighlightedDiags(prev => {
-      const next = new Set(prev)
-      next.has(diagId) ? next.delete(diagId) : next.add(diagId)
-      return next
-    })
-  }
+// Make DIAG_MAP globally accessible for hooks
+window.DIAG_MAP = DIAG_MAP;
 
-  const handleNodeSelect = useCallback((node) => {
-    setSelectedNode(node)
-  }, [])
+function App() {
+  const { state, updateState, addNode, removeNode, toggleDiagnosis, addCustomDiagnosis, saveDiagProfile } = useLocalStorage();
+  const { generateSuggestions, generateCustomSymptoms, loading: apiLoading } = useClaudeAPI();
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [currentProfileDiagId, setCurrentProfileDiagId] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [allDiagnoses, setAllDiagnoses] = useState([...DIAGNOSES]);
+
+  // Check if first time user
+  useEffect(() => {
+    const isFirstTime = state.nodes.length === 0 && state.selectedDiags.length === 0 && !state.username;
+    setShowOnboarding(isFirstTime);
+  }, []);
+
+  // Sync custom diagnoses with DIAG_MAP
+  useEffect(() => {
+    allDiagnoses.forEach(diag => {
+      if (!window.DIAG_MAP[diag.id]) {
+        window.DIAG_MAP[diag.id] = diag;
+      }
+    });
+  }, [allDiagnoses]);
+
+  const handleOnboardingComplete = (data) => {
+    updateState({
+      lang: data.lang,
+      username: data.username
+    });
+    setShowOnboarding(false);
+  };
+
+  const handleToggleDiagnosis = (diagId) => {
+    const isCurrentlySelected = state.selectedDiags.includes(diagId);
+    
+    // If selecting (not deselecting), open profile modal
+    if (!isCurrentlySelected) {
+      toggleDiagnosis(diagId);
+      setCurrentProfileDiagId(diagId);
+      setShowProfileModal(true);
+    } else {
+      toggleDiagnosis(diagId);
+    }
+  };
+
+  const handleOpenProfile = (diagId) => {
+    setCurrentProfileDiagId(diagId);
+    setShowProfileModal(true);
+  };
+
+  const handleSaveProfile = (diagId, profileData) => {
+    saveDiagProfile(diagId, profileData);
+    setShowProfileModal(false);
+    setCurrentProfileDiagId(null);
+    setToastMessage(state.lang === 'es' 
+      ? 'Perfil guardado — las sugerencias serán más precisas' 
+      : 'Profile saved — suggestions will be more accurate');
+  };
+
+  const handleSkipProfile = () => {
+    setShowProfileModal(false);
+    setCurrentProfileDiagId(null);
+  };
+
+  const handleGenerateSymptoms = async () => {
+    if (state.selectedDiags.length === 0) {
+      setToastMessage(state.lang === 'es' ? 'Selecciona al menos un diagnóstico primero' : 'Select at least one diagnosis first');
+      return;
+    }
+
+    setLoadingMessage(state.lang === 'es' ? 'Generando sugerencias...' : 'Generating suggestions...');
+
+    try {
+      const newSuggestions = await generateSuggestions(
+        state.selectedDiags,
+        state.nodes,
+        window.DIAG_MAP,
+        state.diagProfiles
+      );
+      
+      setSuggestions(newSuggestions);
+      setLoadingMessage('');
+    } catch (error) {
+      setLoadingMessage('');
+      setToastMessage(state.lang === 'es' ? 'Error al generar sugerencias' : 'Error generating suggestions');
+    }
+  };
+
+  const handleAcceptSuggestion = (index) => {
+    const symptom = suggestions[index];
+    addNode({
+      id: `sym-${Date.now()}-${Math.random()}`,
+      name: symptom.name,
+      desc: symptom.reason,
+      conds: symptom.conds,
+      x: 0,
+      y: 0,
+      _placed: false
+    });
+
+    setSuggestions(prev => prev.filter((_, i) => i !== index));
+    setToastMessage(state.lang === 'es' ? 'Síntoma agregado' : 'Symptom added');
+  };
+
+  const handleRejectSuggestion = (index) => {
+    setSuggestions(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAcceptAll = () => {
+    suggestions.forEach(symptom => {
+      addNode({
+        id: `sym-${Date.now()}-${Math.random()}`,
+        name: symptom.name,
+        desc: symptom.reason,
+        conds: symptom.conds,
+        x: 0,
+        y: 0,
+        _placed: false
+      });
+    });
+
+    setSuggestions([]);
+    setToastMessage(state.lang === 'es' ? 'Todos los síntomas aceptados' : 'All symptoms accepted');
+  };
+
+  const handleAddCustomDiagnosis = async (customDiag) => {
+    // Add to local list and global map
+    setAllDiagnoses(prev => [...prev, customDiag]);
+    window.DIAG_MAP[customDiag.id] = customDiag;
+    
+    // Add to state
+    addCustomDiagnosis(customDiag);
+
+    // Generate symptoms for it
+    setLoadingMessage(state.lang === 'es' ? `Buscando síntomas de ${customDiag.label}...` : `Finding symptoms for ${customDiag.label}...`);
+
+    try {
+      const customSymptoms = await generateCustomSymptoms(
+        customDiag.label,
+        state.selectedDiags.filter(d => d !== customDiag.id),
+        window.DIAG_MAP
+      );
+
+      const formattedSuggestions = customSymptoms.map((s, i) => ({
+        name: s.name,
+        reason: s.reason,
+        conds: [customDiag.id],
+        _idx: i
+      }));
+
+      setSuggestions(formattedSuggestions);
+      setLoadingMessage('');
+    } catch (error) {
+      setLoadingMessage('');
+      setToastMessage(state.lang === 'es' ? 'Error al generar síntomas' : 'Error generating symptoms');
+    }
+  };
+
+  const handleSymptomClick = (symptom) => {
+    // Could be used to center on node, show details, etc.
+    console.log('Clicked symptom:', symptom);
+  };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden"
-      style={{
-        background: '#f0f4f8',
-        backgroundImage: `
-          radial-gradient(ellipse at 15% 15%, rgba(56,182,255,0.08) 0%, transparent 55%),
-          radial-gradient(ellipse at 85% 85%, rgba(157,80,187,0.07) 0%, transparent 55%)
-        `,
-        fontFamily: "'Outfit', sans-serif",
-        color: '#1e293b',
-        userSelect: 'none',
-      }}
-    >
-      {/* SIDEBAR */}
-      <aside className="w-80 h-full flex-shrink-0 flex flex-col overflow-hidden"
-        style={{
-          borderRight: '1px solid rgba(148,163,184,0.25)',
-          background: 'rgba(255,255,255,0.7)',
-          backdropFilter: 'blur(16px)',
-        }}
-      >
-        <div className="p-6 border-b" style={{ borderColor: 'rgba(148,163,184,0.25)' }}>
-          <div style={{
-            fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.03em',
-            background: 'linear-gradient(135deg, #38b6ff 0%, #9d50bb 100%)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
-            SymptomMap
-          </div>
-          <p className="text-xs mt-1" style={{ color: '#94a3b8', fontFamily: "'DM Mono', monospace" }}>
-            mapa de síntomas interactivo
-          </p>
-        </div>
+    <LanguageProvider initialLang={state.lang}>
+      <div className="h-screen flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        {/* Onboarding */}
+        {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
 
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(148,163,184,0.25)' }}>
-          <div style={{
-            fontFamily: "'DM Mono', monospace", fontSize: '0.6rem',
-            textTransform: 'uppercase', letterSpacing: '0.12em',
-            color: '#94a3b8', marginBottom: 10,
-          }}>
-            Diagnósticos
-          </div>
-          <div className="flex flex-col gap-1">
-            {DIAGNOSES.map(d => {
-              const isHighlit = highlightedDiags.has(d.id)
-              return (
-                <button key={d.id} onClick={() => toggleHighlight(d.id)}
-                  className="flex items-center gap-2 px-2 py-2 rounded-lg text-left transition-all"
-                  style={{
-                    border: `1px solid ${isHighlit ? d.color + '66' : 'transparent'}`,
-                    background: isHighlit ? d.color + '12' : 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div style={{
-                    width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
-                    background: d.color, opacity: isHighlit ? 1 : 0.45,
-                  }} />
-                  <span style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: '0.8rem',
-                    fontWeight: isHighlit ? 600 : 400,
-                    color: isHighlit ? '#1e293b' : '#64748b',
-                  }}>
-                    {d.label.replace('\n', ' ')}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-          {highlightedDiags.size > 0 && (
-            <button onClick={() => setHighlightedDiags(new Set())}
-              className="mt-3 w-full py-1.5 rounded-lg text-xs"
-              style={{ border: '1.5px solid #cbd5e1', color: '#64748b', background: 'transparent', cursor: 'pointer' }}
-            >
-              Limpiar filtro
-            </button>
-          )}
-        </div>
+        {/* Main App */}
+        {!showOnboarding && (
+          <>
+            <Topbar 
+              username={state.username} 
+              onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
 
-        {selectedNode && !selectedNode.hub && (
-          <div className="p-4 border-b" style={{ borderColor: 'rgba(148,163,184,0.25)' }}>
-            <div style={{
-              fontFamily: "'DM Mono', monospace", fontSize: '0.6rem',
-              textTransform: 'uppercase', letterSpacing: '0.12em',
-              color: '#94a3b8', marginBottom: 8,
-            }}>
-              Síntoma seleccionado
-            </div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 8 }}>
-              {selectedNode.name}
-            </div>
-            <div className="flex flex-wrap gap-1 mb-3">
-              {selectedNode.conds?.map(c => {
-                const d = DIAG_MAP[c]
-                return d ? (
-                  <span key={c} style={{
-                    padding: '2px 10px', borderRadius: 20,
-                    fontSize: '0.62rem', fontWeight: 500,
-                    border: `1.5px solid ${d.color}`, color: d.color,
-                  }}>
-                    {d.label.replace('\n', ' ')}
-                  </span>
-                ) : null
-              })}
-            </div>
-            {selectedNode.conds?.length > 1 && (
-              <div style={{
-                padding: '8px 12px', background: 'rgba(56,182,255,0.07)',
-                border: '1px solid rgba(56,182,255,0.2)', borderRadius: 8,
-                fontSize: '0.75rem', color: '#64748b', lineHeight: 1.6,
-              }}>
-                ✦ Aparece en <strong>{selectedNode.conds.length} diagnósticos</strong> — intersección.
+            <div className="flex flex-1 overflow-hidden">
+              {/* Left Panel */}
+              <LeftPanel
+                diagnoses={allDiagnoses}
+                selectedDiags={state.selectedDiags}
+                symptoms={state.nodes}
+                diagMap={window.DIAG_MAP}
+                diagProfiles={state.diagProfiles}
+                onToggleDiagnosis={handleToggleDiagnosis}
+                onAddCustomDiagnosis={() => setShowCustomModal(true)}
+                onOpenProfile={handleOpenProfile}
+                onAddSymptom={addNode}
+                onDeleteSymptom={removeNode}
+                onSymptomClick={handleSymptomClick}
+                onGenerateSymptoms={handleGenerateSymptoms}
+                isGenerating={apiLoading}
+                isCollapsed={sidebarCollapsed}
+              />
+
+              {/* Canvas */}
+              <div className="flex-1 relative overflow-hidden">
+                <SymptomGraph
+                  nodes={state.nodes}
+                  diagMap={window.DIAG_MAP}
+                  onNodeClick={handleSymptomClick}
+                />
+
+                {/* Legend */}
+                <Legend />
               </div>
-            )}
-            <button onClick={() => setSelectedNode(null)}
-              className="mt-3 w-full py-1.5 rounded-lg text-xs"
-              style={{ border: '1.5px solid #cbd5e1', color: '#64748b', background: 'transparent', cursor: 'pointer' }}
-            >
-              Cerrar
-            </button>
-          </div>
+
+              {/* Right Panel */}
+              <RightPanel
+                suggestions={suggestions}
+                diagMap={window.DIAG_MAP}
+                onAccept={handleAcceptSuggestion}
+                onReject={handleRejectSuggestion}
+                onAcceptAll={handleAcceptAll}
+                onClose={() => setSuggestions([])}
+              />
+            </div>
+          </>
         )}
 
-        <div className="p-4 mt-auto">
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.62rem', color: '#94a3b8', lineHeight: 1.7 }}>
-            Arrastra nodos · Scroll para zoom · Clic en diagnóstico para filtrar
-          </p>
-        </div>
-      </aside>
+        {/* Modals & Overlays */}
+        <CustomDiagnosisModal
+          isOpen={showCustomModal}
+          onClose={() => setShowCustomModal(false)}
+          onSave={handleAddCustomDiagnosis}
+        />
 
-      {/* GRAFO */}
-      <SymptomGraph
-        highlightedDiags={highlightedDiags}
-        selectedId={selectedNode?.id ?? null}
-        onNodeSelect={handleNodeSelect}
-      />
-    </div>
-  )
+        <DiagnosisProfileModal
+          isOpen={showProfileModal}
+          diagnosisId={currentProfileDiagId}
+          diagMap={window.DIAG_MAP}
+          savedProfile={state.diagProfiles?.[currentProfileDiagId]}
+          onSave={handleSaveProfile}
+          onSkip={handleSkipProfile}
+        />
+
+        {toastMessage && (
+          <Toast
+            message={toastMessage}
+            onClose={() => setToastMessage('')}
+          />
+        )}
+
+        {loadingMessage && (
+          <LoadingOverlay message={loadingMessage} />
+        )}
+      </div>
+    </LanguageProvider>
+  );
 }
+
+export default App;
