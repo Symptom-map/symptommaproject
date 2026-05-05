@@ -1,0 +1,50 @@
+/* ─────────────────────────────────────────────────────────────
+   tokens.css — sistema de diseño SymptomMap
+   Para cambiar colores o tipografía, edita este archivo.
+───────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Fondos */
+  --bg:       #f0f4f8;
+  --surface:  #ffffff;
+  --surface2: #f8fafc;
+
+  /* Bordes */
+  --border:       #e2e8f0;
+  --border-solid: #cbd5e1;
+
+  /* Texto */
+  --ink:   #1e293b;
+  --muted: #64748b;
+  --light: #94a3b8;
+
+  /* Brand */
+  --brand-from: #38b6ff;
+  --brand-to:   #9d50bb;
+  --brand:      linear-gradient(135deg, #38b6ff 0%, #9d50bb 100%);
+  --ai:         #38b6ff;
+
+  /* Diagnósticos */
+  --c-tda:   #3b82f6;
+  --c-tlp:   #a855f7;
+  --c-an:    #fb7185;
+  --c-aut:   #10b981;
+  --c-cptsd: #f59e0b;
+  --c-bi:    #6366f1;
+  --c-anx:   #84cc16;
+
+  /* Sombras */
+  --shadow:    0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+
+  /* Radio */
+  --r:     14px;
+  --r-sm:  8px;
+  --r-btn: 20px;
+
+  /* Tipografía */
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}

@@ -1,0 +1,425 @@
+/* ─────────────────────────────────────────────────────────────
+   components.css — botones, panels, cards, inputs
+   Todos los componentes reutilizables de la UI.
+───────────────────────────────────────────────────────────── */
+
+/* ── Botones ── */
+.btn-primary {
+  flex: 1;
+  padding: 10px;
+  background: var(--ink);
+  color: #f5f2ec;
+  border: none;
+  border-radius: var(--r-btn);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.btn-secondary {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted);
+  border-radius: var(--r-btn);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+.btn-generate {
+  width: 100%;
+  padding: 11px;
+  background: var(--brand);
+  color: white;
+  border: none;
+  border-radius: var(--r-btn);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(56,182,255,0.25);
+}
+.btn-generate:hover    { opacity: 0.9; transform: translateY(-1px); }
+.btn-generate:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-icon {
+  width: 34px; height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.btn-icon:hover { background: var(--surface2); border-color: var(--ink); color: var(--ink); }
+
+/* ── Badge AI ── */
+.ai-badge {
+  background: var(--ai);
+  color: white;
+  font-size: 0.58rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ── Inputs ── */
+input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  border-radius: var(--r-sm);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus, textarea:focus {
+  border-color: var(--ai);
+  box-shadow: 0 0 0 3px rgba(56,182,255,0.12);
+}
+textarea { resize: none; line-height: 1.5; }
+
+/* ── Panel izquierdo — secciones ── */
+.panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.acc-section {
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.acc-section.scrollable {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.acc-header {
+  width: 100%;
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: left;
+  transition: color 0.12s;
+}
+.acc-header:hover, .acc-header.open { color: var(--ink); }
+
+.acc-count {
+  font-size: 0.6rem;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+
+.acc-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+  color: var(--light);
+}
+.acc-header:not(.open) .acc-arrow { transform: rotate(-90deg); }
+
+.acc-body { padding: 0 18px 16px; }
+
+/* ── Diagnóstico item ── */
+.diag-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition: all 0.12s;
+  justify-content: space-between;
+}
+.diag-item:hover { background: var(--surface2); }
+.diag-item.active { border-color: var(--border); background: var(--surface2); }
+
+.diag-swatch {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.diag-item.active .diag-swatch { opacity: 1; }
+
+.diag-name {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+  transition: color 0.15s;
+  flex: 1;
+}
+.diag-item.active .diag-name { font-weight: 500; }
+
+/* ── Lista de síntomas ── */
+.node-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.1s;
+  margin-bottom: 3px;
+}
+.node-row:hover { background: var(--surface2); border-color: var(--border); }
+.node-row.selected { background: var(--surface2); border-color: var(--ink); }
+
+.node-row-bar {
+  width: 3px;
+  min-height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+.node-row-name {
+  font-size: 0.8rem;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.node-row-del {
+  opacity: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cc4444;
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s;
+}
+.node-row:hover .node-row-del { opacity: 1; }
+
+/* ── Panel derecho ── */
+.rp-inner {
+  width: 290px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.rp-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: var(--surface2);
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.rp-close:hover { background: var(--border); color: var(--ink); }
+
+.rp-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  padding-right: 28px;
+}
+
+.rp-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.rp-tag {
+  padding: 3px 10px;
+  border-radius: var(--r-btn);
+  font-size: 0.62rem;
+  font-weight: 500;
+  border: 1.5px solid;
+}
+
+.rp-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--light);
+  margin-bottom: 5px;
+}
+
+.rp-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--ink);
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+.rp-textarea:focus { border-color: var(--ai); }
+
+.ai-note {
+  padding: 10px 12px;
+  background: rgba(56,182,255,0.06);
+  border: 1px solid rgba(56,182,255,0.18);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* ── Review panel ── */
+.rv-header {
+  padding: 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rv-header h3 { font-size: 0.9rem; font-weight: 700; flex: 1; }
+
+.rv-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+
+.suggest-item {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: var(--surface2);
+  transition: all 0.12s;
+}
+.suggest-item:hover { border-color: var(--ink); }
+
+.suggest-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+.suggest-reason { font-size: 0.76rem; color: var(--muted); font-style: italic; margin-bottom: 8px; line-height: 1.5; }
+.suggest-conds { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 8px; }
+.suggest-actions { display: flex; gap: 6px; }
+
+.btn-accept {
+  flex: 1; padding: 6px;
+  background: var(--ai);
+  color: white; border: none;
+  border-radius: var(--r-btn);
+  font-size: 0.7rem; font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.btn-reject {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1.5px solid var(--border-solid);
+  color: var(--muted);
+  border-radius: var(--r-btn);
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.btn-reject:hover { border-color: #cc4444; color: #cc4444; }
+
+.rv-footer {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Chips de diagnóstico (modales) ── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+}
+.chip.on { color: white; border-color: transparent; }
+
+/* ── Leyenda items ── */
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 4px;
+}
+
+.legend-hub {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+}
+
+.legend-sym {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.legend-sym.multi { background: transparent; border: 2px solid var(--muted); width: 10px; height: 10px; }
+.legend-sym.float { background: transparent; border: 2px dashed var(--muted); width: 10px; height: 10px; }
+
+.legend-line {
+  width: 22px; height: 1px;
+  background: var(--muted);
+  opacity: 0.4;
+}
+.legend-line.thick { height: 3px; opacity: 0.9; }
+.legend-line.dashed {
+  background: repeating-linear-gradient(
+    90deg,#1c1a1688 0,#1c1a1688 3px,transparent 3px,transparent 6px
+  );
+}
