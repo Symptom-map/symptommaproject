@@ -1945,10 +1945,15 @@ renderDiagList();
 renderNodeList();
 applyLang();
 
-// Always skip onboarding — diagnoses are pre-loaded
+// Mostrar onboarding si no hay estado guardado
 const ob = document.getElementById('onboarding');
-ob.style.display = 'none';
-document.getElementById('legend').classList.remove('hidden');
+if (!loadState()) {
+  ob.style.display = 'flex';
+  document.getElementById('legend').classList.add('hidden');
+} else {
+  ob.style.display = 'none';
+  document.getElementById('legend').classList.remove('hidden');
+}
 if (state.username) {
   const mapLabel = lang === 'es' ? `mapa de ${state.username}` : `${state.username}'s map`;
   document.getElementById('map-name').textContent = mapLabel;
@@ -1959,3 +1964,4 @@ if (state.nodes.length > 0) {
   initLayout();
   draw();
 }
+
