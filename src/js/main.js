@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════
 const DIAGNOSES = [
@@ -1945,16 +1945,10 @@ renderDiagList();
 renderNodeList();
 applyLang();
 
-// Mostrar onboarding si no hay estado guardado
+// Always skip onboarding — diagnoses are pre-loaded
 const ob = document.getElementById('onboarding');
-if (!loadState()) {
-  ob.style.display = 'flex';
-  document.getElementById('legend').classList.add('hidden');
-} else {
-  ob.style.display = 'none';
-  document.getElementById('legend').classList.remove('hidden');
-}
-
+ob.style.display = 'none';
+document.getElementById('legend').classList.remove('hidden');
 if (state.username) {
   const mapLabel = lang === 'es' ? `mapa de ${state.username}` : `${state.username}'s map`;
   document.getElementById('map-name').textContent = mapLabel;
@@ -1965,9 +1959,9 @@ if (state.nodes.length > 0) {
   initLayout();
   draw();
 }
-
 // Exponer funciones globales para el onboarding
-window.setLang    = (l) => { lang = l; state.lang = l; saveState(state); applyLang(); }
-window.obNext     = obNext
-window.startApp   = startApp
+window.setLang      = (l) => { lang = l; state.lang = l; saveState(state); applyLang(); }
+window.obNext       = obNext
+window.obNext2      = obNext2
+window.startApp     = startApp
 window.openApiModal = () => document.getElementById('apimodal')?.classList.add('show')
