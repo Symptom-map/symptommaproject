@@ -1964,9 +1964,12 @@ if (state.nodes.length > 0) {
   draw();
 }
 // Exponer funciones globales para el onboarding
-window.setLang = setLang
-window.obNext       = obNext
-window.obNext2      = obNext2
-window.startApp     = startApp
-window.openApiModal = () => document.getElementById('apimodal')?.classList.add('show')
+window.setLang    = setLang
+window.obNext     = obNext
+window.obNext2    = obNext2
+window.obBack     = obBack
+window.obBack2    = obBack2
+window.startApp   = startApp
 window.toggleLegend = toggleLegend
+window.updateNameBtn = updateNameBtn
+window.openApiModal = () => document.getElementById('apimodal')?.classList.add('show')
