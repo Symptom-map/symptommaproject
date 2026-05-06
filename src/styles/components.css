@@ -423,3 +423,54 @@ textarea { resize: none; line-height: 1.5; }
     90deg,#1c1a1688 0,#1c1a1688 3px,transparent 3px,transparent 6px
   );
 }
+/* ── Onboarding ── */
+#onboarding {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.35s ease;
+}
+#onboarding.hide { opacity: 0; pointer-events: none; }
+.ob-box { width: 480px; max-width: 94vw; display: flex; flex-direction: column; gap: 0; }
+.ob-step { display: none; flex-direction: column; gap: 24px; }
+.ob-step.active { display: flex; }
+.ob-logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
+.ob-logo span { color: var(--ai); }
+.ob-tagline { font-size: 0.92rem; color: var(--muted); line-height: 1.7; font-weight: 400; }
+.ob-disclaimer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ai);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 14px 16px;
+  font-size: 0.82rem; color: var(--muted); line-height: 1.65;
+}
+.ob-lang { display: flex; gap: 12px; }
+.ob-lang-btn {
+  flex: 1; padding: 18px;
+  border: 1.5px solid var(--border-solid);
+  border-radius: var(--r);
+  background: var(--surface);
+  cursor: pointer; text-align: center; transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.ob-lang-btn:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: var(--shadow); }
+.ob-lang-btn.selected {
+  border-color: var(--ink); background: var(--ink); color: #f5f2ec;
+  transform: translateY(-2px); box-shadow: var(--shadow);
+}
+.ob-lang-btn .lang-name { font-size: 1.05rem; font-weight: 700; display: block; margin-bottom: 3px; }
+.ob-lang-btn .lang-sub  { font-size: 0.7rem; opacity: 0.6; }
+.ob-lang-btn.selected .lang-name { color: #f5f2ec; }
+.ob-nav { display: flex; gap: 10px; align-items: center; }
+.ob-progress { flex: 1; height: 3px; background: var(--border-solid); border-radius: 2px; overflow: hidden; }
+.ob-progress-fill { height: 100%; background: var(--ink); border-radius: 2px; transition: width 0.3s ease; }
+.ob-step-label { font-size: 0.65rem; color: var(--light); font-weight: 500; }
+.therapist-notice {
+  padding: 12px 14px;
+  background: rgba(254,249,236,0.9);
+  border: 1px solid rgba(232,201,106,0.5);
+  border-radius: var(--r-sm);
+  font-size: 0.78rem; color: #7a6020; line-height: 1.55;
+}
+.therapist-notice strong { display: block; margin-bottom: 3px; font-weight: 700; }
