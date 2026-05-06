@@ -1959,4 +1959,3 @@ if (state.nodes.length > 0) {
   initLayout();
   draw();
 }
-</script>
