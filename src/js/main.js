@@ -1964,7 +1964,7 @@ if (state.nodes.length > 0) {
   draw();
 }
 // Exponer funciones globales para el onboarding
-window.setLang      = (l) => { lang = l; state.lang = l; saveState(state); applyLang(); }
+window.setLang = setLang
 window.obNext       = obNext
 window.obNext2      = obNext2
 window.startApp     = startApp
