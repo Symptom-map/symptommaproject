@@ -1954,6 +1954,7 @@ if (!loadState()) {
   ob.style.display = 'none';
   document.getElementById('legend').classList.remove('hidden');
 }
+
 if (state.username) {
   const mapLabel = lang === 'es' ? `mapa de ${state.username}` : `${state.username}'s map`;
   document.getElementById('map-name').textContent = mapLabel;
@@ -1965,3 +1966,8 @@ if (state.nodes.length > 0) {
   draw();
 }
 
+// Exponer funciones globales para el onboarding
+window.setLang    = (l) => { lang = l; state.lang = l; saveState(state); applyLang(); }
+window.obNext     = obNext
+window.startApp   = startApp
+window.openApiModal = () => document.getElementById('apimodal')?.classList.add('show')
