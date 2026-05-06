@@ -1946,7 +1946,7 @@ renderNodeList();
 applyLang();
 
 const ob = document.getElementById('onboarding');
-if (state.selectedDiags.length === 0) {
+if (!localStorage.getItem('sm_state_v2')) {
   ob.style.display = 'flex';
   document.getElementById('legend').classList.add('hidden');
 } else {
@@ -1969,3 +1969,4 @@ window.obNext       = obNext
 window.obNext2      = obNext2
 window.startApp     = startApp
 window.openApiModal = () => document.getElementById('apimodal')?.classList.add('show')
+window.toggleLegend = toggleLegend
