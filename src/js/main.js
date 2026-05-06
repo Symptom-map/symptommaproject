@@ -1945,9 +1945,13 @@ renderDiagList();
 renderNodeList();
 applyLang();
 
-// Always skip onboarding — diagnoses are pre-loaded
 const ob = document.getElementById('onboarding');
-ob.style.display = 'none';
+if (state.selectedDiags.length === 0) {
+  ob.style.display = 'flex';
+  document.getElementById('legend').classList.add('hidden');
+} else {
+  ob.style.display = 'none';
+}
 document.getElementById('legend').classList.remove('hidden');
 if (state.username) {
   const mapLabel = lang === 'es' ? `mapa de ${state.username}` : `${state.username}'s map`;

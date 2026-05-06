@@ -1,8 +1,4 @@
-/* ─────────────────────────────────────────────────────────────
-   layout.css — estructura principal de la app
-   Topbar, paneles, canvas, review panel.
-───────────────────────────────────────────────────────────── */
-
+/* layout.css — estructura principal */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -20,7 +16,6 @@ body {
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border-solid); border-radius: 2px; }
 
-/* ── Topbar ── */
 .topbar {
   height: 56px;
   border-bottom: 1px solid var(--border);
@@ -33,25 +28,6 @@ body {
   z-index: 10;
 }
 
-.logo {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.03em;
-  background: var(--brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.topbar-sep { flex: 1; }
-
-#map-name {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-/* ── App wrapper ── */
 .app {
   display: flex;
   flex: 1;
@@ -59,7 +35,6 @@ body {
   position: relative;
 }
 
-/* ── Panel izquierdo ── */
 .left-panel {
   width: 290px;
   border-right: 1px solid var(--border);
@@ -70,7 +45,6 @@ body {
   background: var(--surface);
 }
 
-/* ── Canvas ── */
 #canvas-wrap {
   flex: 1;
   position: relative;
@@ -85,7 +59,6 @@ body {
   height: 100%;
 }
 
-/* ── Panel derecho ── */
 .right-panel {
   width: 0;
   border-left: 1px solid transparent;
@@ -94,13 +67,11 @@ body {
   transition: width 0.22s ease;
   background: var(--surface);
 }
-
 .right-panel.open {
   width: 290px;
   border-left-color: var(--border);
 }
 
-/* ── Review panel ── */
 #review-panel {
   position: fixed;
   top: 56px; right: 0; bottom: 0;
@@ -114,10 +85,8 @@ body {
   transition: transform 0.25s ease;
   overflow: hidden;
 }
-
 #review-panel.show { transform: translateX(0); }
 
-/* ── Modales ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -130,25 +99,8 @@ body {
   pointer-events: none;
   transition: opacity 0.2s;
 }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
 
-.modal-overlay.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.modal-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  box-shadow: var(--shadow-lg);
-  width: 420px;
-  max-height: 88vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Leyenda ── */
 #legend {
   position: absolute;
   bottom: 20px; left: 20px;
@@ -164,10 +116,8 @@ body {
   flex-direction: column;
   gap: 7px;
 }
-
 #legend.hidden { opacity: 0; pointer-events: none; }
 
-/* ── Toast ── */
 #toast {
   position: fixed;
   bottom: 28px; left: 50%;
@@ -184,13 +134,8 @@ body {
   z-index: 400;
   white-space: nowrap;
 }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-#toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ── Loading ── */
 #loading {
   position: fixed;
   inset: 0;
@@ -205,7 +150,6 @@ body {
   pointer-events: none;
   transition: opacity 0.2s;
 }
-
 #loading.show { opacity: 1; pointer-events: all; }
 
 .spinner {
@@ -215,21 +159,4 @@ body {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Tooltip ── */
-#tooltip {
-  position: fixed;
-  background: #1a1814;
-  color: #f5f2ec;
-  padding: 6px 12px;
-  border-radius: var(--r-btn);
-  font-size: 0.72rem;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.1s;
-  z-index: 100;
-  max-width: 240px;
-  white-space: normal;
-}
+@keyframes spin { to { transform
