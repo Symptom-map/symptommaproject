@@ -101,6 +101,18 @@ body {
 }
 .modal-overlay.show { opacity: 1; pointer-events: all; }
 
+/* Modales que no usan .modal-overlay en el HTML — se ocultan aquí */
+#apimodal, #diagmodal, #custommodal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,24,20,0.4);
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+#apimodal.show, #diagmodal.show, #custommodal.show { display: flex; }
+
 #legend {
   position: absolute;
   bottom: 20px; left: 20px;
@@ -117,6 +129,24 @@ body {
   gap: 7px;
 }
 #legend.hidden { opacity: 0; pointer-events: none; }
+
+#legend-toggle {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 50;
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#legend-toggle:hover { color: var(--ink); }
 
 #toast {
   position: fixed;

@@ -390,6 +390,100 @@ textarea { resize: none; line-height: 1.5; }
 }
 .chip.on { color: white; border-color: transparent; }
 
+/* ── Modal boxes: diagmodal y custommodal ── */
+.diagmodal-box,
+.custommodal-box {
+  background: var(--surface);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  padding: 28px 32px 24px;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.diagmodal-header { display: flex; flex-direction: column; gap: 4px; }
+
+.diagmodal-box h2,
+.custommodal-box h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.diagmodal-header p,
+.custommodal-box > p {
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.diagmodal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.profile-field { display: flex; flex-direction: column; gap: 6px; }
+
+.profile-field label {
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--light);
+}
+
+.profile-field input[type="text"],
+.profile-field input[type="number"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink);
+  width: 100%;
+}
+.profile-field input:focus { outline: none; border-color: var(--brand-from); }
+
+.diagmodal-footer,
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--light);
+  margin-bottom: 6px;
+}
+
+#cm-name {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--ink);
+}
+#cm-name:focus { outline: none; border-color: var(--brand-from); }
+
 /* ── Leyenda items ── */
 .legend-row {
   display: flex;
